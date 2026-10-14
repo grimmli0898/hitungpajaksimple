@@ -25,17 +25,17 @@
     <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800 no-print">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 p-2.5 rounded-xl text-white">
+                <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md">
                     <i class="fa-solid fa-calculator text-xl"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">Kalkulator Pajak & Faktur Indonesia</h1>
-                    <p class="text-xs text-slate-400">Sesuai Regulasi Perpajakan Indonesia (PPN 12% & DPP Nilai Lain 11/12)</p>
+                    <p class="text-xs text-slate-400">Regulasi PPN 12%, DPP Nilai Lain (11/12), Terbilang & Rincian Barang</p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <span class="bg-blue-900/60 text-blue-300 border border-blue-700/50 text-xs font-medium px-3 py-1 rounded-full">
-                    <i class="fa-solid fa-shield-halved mr-1"></i> Regulasi PPN 12%
+                <span class="bg-blue-900/60 text-blue-300 border border-blue-700/50 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i> PPN 12% & DPP 11/12
                 </span>
             </div>
         </div>
@@ -49,7 +49,7 @@
             <div class="lg:col-span-6 space-y-6 no-print">
                 
                 <!-- Card Input Utama -->
-                <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
                     
                     <!-- Informasi Klien & Invoice -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -65,17 +65,56 @@
                         </div>
                     </div>
 
-                    <!-- Subtotal Transaksi -->
+                    <!-- Pilihan Mode Input: Rincian Barang vs Subtotal Langsung -->
                     <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">
-                            Sub Total Transaksi (Rp) <span class="text-rose-500">*</span>
-                        </label>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-sm">Rp</span>
-                            <input type="text" id="subtotal" placeholder="0" value="189.000.000"
-                                class="w-full pl-10 pr-3 py-2.5 font-semibold text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-semibold text-slate-800">Metode Penginputan Transaksi</label>
+                            <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs">
+                                <button type="button" id="tabItemsMode" onclick="setInputMode('items')"
+                                    class="px-2.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm">
+                                    <i class="fa-solid fa-list-check mr-1"></i> Daftar Barang
+                                </button>
+                                <button type="button" id="tabDirectMode" onclick="setInputMode('direct')"
+                                    class="px-2.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900">
+                                    <i class="fa-solid fa-calculator mr-1"></i> Subtotal Langsung
+                                </button>
+                            </div>
                         </div>
-                        <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-paste text-blue-500 mr-1"></i> Bisa diketik manual atau copas dari Excel (misal: Rp189,000,000)</p>
+
+                        <!-- Bagian 1: Daftar Barang Dinamis -->
+                        <div id="itemsContainer" class="space-y-2.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                                <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
+                                    <i class="fa-solid fa-boxes-stacked text-blue-600 mr-1"></i> Item Barang / Jasa
+                                </span>
+                                <span class="text-[11px] text-slate-500" id="itemsCountBadge">1 Barang</span>
+                            </div>
+
+                            <!-- List Item Rows -->
+                            <div id="itemsList" class="space-y-2 max-h-72 overflow-y-auto pr-1">
+                                <!-- Generated dynamically via JavaScript -->
+                            </div>
+
+                            <!-- Tombol Tambah Barang -->
+                            <button type="button" onclick="addNewItem()" 
+                                class="w-full py-2 px-3 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Tambah Baris Barang / Jasa</span>
+                            </button>
+                        </div>
+
+                        <!-- Bagian 2: Subtotal Langsung (Alternatif) -->
+                        <div id="directSubtotalContainer" class="hidden p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">
+                                Sub Total Transaksi (Rp) <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-sm">Rp</span>
+                                <input type="text" id="subtotal" placeholder="0" value="189.000.000"
+                                    class="w-full pl-10 pr-3 py-2.5 font-semibold text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base">
+                            </div>
+                            <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-paste text-blue-500 mr-1"></i> Mendukung ketik manual langsung berformat titik otomatis atau copas Excel (Rp189,000,000).</p>
+                        </div>
                     </div>
 
                     <!-- Diskon (Opsional) -->
@@ -238,15 +277,15 @@
                     <!-- Header Output -->
                     <div class="bg-slate-900 text-white p-4 flex justify-between items-center no-print">
                         <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-file-invoice text-emerald-400"></i>
+                            <i class="fa-solid fa-file-invoice text-emerald-400 text-lg"></i>
                             <h2 class="font-semibold text-sm sm:text-base">Hasil Rincian Penagihan</h2>
                         </div>
                         <div class="flex gap-2">
-                            <button onclick="copyToClipboard()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg text-slate-200 border border-slate-700 transition flex items-center gap-1.5">
+                            <button onclick="copyToClipboard()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
                                 <i class="fa-regular fa-copy"></i>
                                 <span>Salin Teks</span>
                             </button>
-                            <button onclick="window.print()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs font-medium rounded-lg text-white transition flex items-center gap-1.5">
+                            <button onclick="window.print()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs font-medium rounded-lg text-white transition flex items-center gap-1.5 shadow-sm">
                                 <i class="fa-solid fa-print"></i>
                                 <span>Cetak</span>
                             </button>
@@ -279,6 +318,30 @@
                                     <span class="text-slate-500">Skema Penagihan Ini:</span>
                                     <span class="font-semibold text-blue-700" id="outPaymentSchemeInfo">Pelunasan / Full (100%)</span>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- Tabel Rincian Daftar Barang (Jika Mode Daftar Barang Digunakan) -->
+                        <div id="invoiceItemsTableContainer" class="mb-4 hidden font-sans">
+                            <div class="text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                                <span>DAFTAR BARANG / JASA:</span>
+                                <span class="text-[10px] text-slate-400">Harga Satuan (Rp)</span>
+                            </div>
+                            <div class="border border-slate-200 rounded-lg overflow-hidden">
+                                <table class="w-full text-xs divide-y divide-slate-200">
+                                    <thead class="bg-slate-100 text-slate-600 font-semibold">
+                                        <tr>
+                                            <th class="py-1.5 px-2 text-left w-7">No</th>
+                                            <th class="py-1.5 px-2 text-left">Nama Barang / Jasa</th>
+                                            <th class="py-1.5 px-2 text-center w-12">Qty</th>
+                                            <th class="py-1.5 px-2 text-right">Harga</th>
+                                            <th class="py-1.5 px-2 text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoiceItemsTableBody" class="divide-y divide-slate-100 bg-white">
+                                        <!-- Rendered dynamically -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -351,11 +414,28 @@
                             <div class="border-t-2 border-slate-800 my-3"></div>
 
                             <!-- GRAND TOTAL -->
-                            <div class="flex justify-between items-center bg-slate-100 p-2 rounded-lg text-slate-900 font-bold text-base">
+                            <div class="flex justify-between items-center bg-slate-100 p-2.5 rounded-lg text-slate-900 font-bold text-base">
                                 <span>* GRAND TOTAL TAGIHAN (INVOICE):</span>
                                 <div class="flex items-center gap-1.5">
                                     <span class="text-blue-700" id="outGrandTotal">Rp 0</span>
-                                    <button onclick="copySingleValue('outGrandTotal')" title="Salin nominal" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                                    <button onclick="copySingleValue('outGrandTotal')" title="Salin nominal Grand Total" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- KOTAK TERBILANG GRAND TOTAL -->
+                            <div class="mt-2 p-3 bg-blue-50/80 border border-blue-200 rounded-xl font-sans text-xs">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div class="space-y-0.5">
+                                        <span class="text-[10px] uppercase font-bold text-blue-900 tracking-wider flex items-center gap-1">
+                                            <i class="fa-solid fa-spell-check text-blue-600"></i> Terbilang:
+                                        </span>
+                                        <p class="font-semibold text-slate-800 italic leading-snug" id="outTerbilang">
+                                            # Nol Rupiah #
+                                        </p>
+                                    </div>
+                                    <button onclick="copySingleValue('outTerbilang')" title="Salin Kalimat Terbilang" class="no-print text-blue-500 hover:text-blue-800 p-1 rounded transition text-xs shrink-0">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
@@ -376,7 +456,7 @@
                                     </div>
                                 </div>
 
-                                <div class="flex justify-between items-center bg-emerald-50 p-2 rounded-lg text-emerald-950 font-bold text-base mt-2 border border-emerald-200">
+                                <div class="flex justify-between items-center bg-emerald-50 p-2.5 rounded-lg text-emerald-950 font-bold text-base mt-2 border border-emerald-200">
                                     <span>* TOTAL DITERIMA / DIBAYARKAN (NET):</span>
                                     <div class="flex items-center gap-1.5">
                                         <span class="text-emerald-700" id="outNetPayment">Rp 0</span>
@@ -385,66 +465,15 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Rows Calculation -->
-                        <div class="space-y-1.5 font-mono">
-                            <div class="flex justify-between items-center">
-                                <span id="labelSubtotal">* Sub Total Penagihan Ini:</span>
-                                <span class="font-semibold" id="outSubtotal">Rp 0</span>
-                            </div>
-
-                            <div class="flex justify-between items-center hidden" id="rowDiscount">
-                                <span>* Diskon:</span>
-                                <span id="outDiscount">Rp 0</span>
-                            </div>
-
-                            <div class="border-t border-dashed border-slate-300 my-2"></div>
-
-                            <div class="flex justify-between items-center font-semibold text-blue-900 bg-blue-50/50 px-1 py-0.5 rounded">
-                                <span>* DPP Reguler:</span>
-                                <span id="outDPPReguler">Rp 0</span>
-                            </div>
-
-                            <!-- DPP Nilai Lain Row -->
-                            <div id="rowDPPNilaiLain" class="flex justify-between items-center text-blue-800 bg-blue-50 px-1 py-0.5 rounded">
-                                <span>* DPP Nilai Lain (11/12):</span>
-                                <span class="font-semibold" id="outDPPNilaiLain">Rp 0</span>
-                            </div>
-
-                            <div class="flex justify-between items-center">
-                                <span id="labelPPN">* PPN 12%:</span>
-                                <span class="font-semibold" id="outPPN">Rp 0</span>
-                            </div>
-
-                            <!-- Dynamic Extra Fee / Ongkir Row -->
-                            <div id="rowShipping" class="flex justify-between items-center hidden">
-                                <span id="outShippingLabel">* Ongkos Kirim / Biaya Lain:</span>
-                                <span id="outShipping">Rp 0</span>
-                            </div>
-
-                            <div class="border-t-2 border-slate-800 my-3"></div>
-
-                            <!-- GRAND TOTAL -->
-                            <div class="flex justify-between items-center bg-slate-100 p-2 rounded-lg text-slate-900 font-bold text-base">
-                                <span>* GRAND TOTAL TAGIHAN (INVOICE):</span>
-                                <span class="text-blue-700" id="outGrandTotal">Rp 0</span>
-                            </div>
-
-                            <!-- ESTIMASI PEMBAYARAN PPh -->
-                            <div id="pphSection" class="pt-4 mt-4 border-t border-slate-200">
-                                <div class="font-bold text-xs font-sans text-slate-500 uppercase tracking-wider mb-2">
-                                    ESTIMASI PEMBAYARAN (JIKA ADA POTONGAN PPh):
-                                </div>
-                                <div id="rowPPhDeduction" class="flex justify-between items-center text-rose-700">
-                                    <span id="labelPPhType">* Potongan PPh:</span>
-                                    <span class="font-semibold" id="outPPhDeduction">(Rp 0)</span>
-                                </div>
-
-                                <div class="flex justify-between items-center bg-emerald-50 p-2 rounded-lg text-emerald-950 font-bold text-base mt-2 border border-emerald-200">
-                                    <span>* TOTAL DITERIMA / DIBAYARKAN (NET):</span>
-                                    <span class="text-emerald-700" id="outNetPayment">Rp 0</span>
+                                <!-- Terbilang Net Payment -->
+                                <div id="containerTerbilangNet" class="mt-1.5 px-2.5 py-1.5 bg-emerald-50/60 rounded-lg border border-emerald-200/60 font-sans text-[11px] text-emerald-900 hidden">
+                                    <div class="flex items-center justify-between gap-1">
+                                        <span>Terbilang (Net): <strong class="italic" id="outTerbilangNet"># Nol Rupiah #</strong></span>
+                                        <button onclick="copySingleValue('outTerbilangNet')" title="Salin Terbilang Net" class="no-print text-emerald-700 hover:text-emerald-900 p-0.5 rounded transition text-[11px]">
+                                            <i class="fa-regular fa-copy"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -463,7 +492,7 @@
                 </div>
 
                 <!-- Toast Notification Box -->
-                <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 text-sm flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none no-print">
+                <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 text-sm flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none no-print z-50">
                     <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
                     <span id="toastMsg">Teks rincian berhasil disalin ke clipboard!</span>
                 </div>
@@ -474,83 +503,58 @@
     </main>
 
     <script>
+        // Fungsi Terbilang Bahasa Indonesia
+        function angkaKeTerbilang(angka) {
+            angka = Math.floor(Math.abs(Number(angka) || 0));
+            if (angka === 0) return "Nol Rupiah";
+
+            const huruf = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+
+            function proses(n) {
+                if (n < 12) {
+                    return huruf[n];
+                } else if (n < 20) {
+                    return proses(n - 10) + " Belas";
+                } else if (n < 100) {
+                    return proses(Math.floor(n / 10)) + " Puluh " + proses(n % 10);
+                } else if (n < 200) {
+                    return "Seratus " + proses(n - 100);
+                } else if (n < 1000) {
+                    return proses(Math.floor(n / 100)) + " Ratus " + proses(n % 100);
+                } else if (n < 2000) {
+                    return "Seribu " + proses(n - 1000);
+                } else if (n < 1000000) {
+                    return proses(Math.floor(n / 1000)) + " Ribu " + proses(n % 1000);
+                } else if (n < 1000000000) {
+                    return proses(Math.floor(n / 1000000)) + " Juta " + proses(n % 1000000);
+                } else if (n < 1000000000000) {
+                    return proses(Math.floor(n / 1000000000)) + " Milyar " + proses(n % 1000000000);
+                } else if (n < 1000000000000000) {
+                    return proses(Math.floor(n / 1000000000000)) + " Triliun " + proses(n % 1000000000000);
+                }
+                return "";
+            }
+
+            const teks = proses(angka).replace(/\s+/g, ' ').trim();
+            return teks + " Rupiah";
+        }
+
         // Formatting Rupiah
         function formatRupiah(number) {
-            const rounded = Math.round(number);
+            const rounded = Math.round(Number(number) || 0);
             return 'Rp ' + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Apply live currency formatting for manual typing & paste
-        function applyCurrencyFormatting(id) {
-            const el = document.getElementById(id);
-            if (!el) return;
-
-            // Handle typing manually
-            el.addEventListener('input', function() {
-                if (id === 'discountValue') {
-                    const discountType = document.querySelector('input[name="discountType"]:checked')?.value;
-                    if (discountType === 'percent') {
-                        calculateTax();
-                        return;
-                    }
-                }
-
-                let raw = this.value;
-                let digits = raw.replace(/[^0-9]/g, '');
-                if (!digits) {
-                    this.value = '';
-                    calculateTax();
-                    return;
-                }
-
-                let val = parseInt(digits, 10);
-                let formatted = val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                
-                let oldLen = raw.length;
-                let selStart = this.selectionStart;
-                this.value = formatted;
-                let newLen = formatted.length;
-
-                let newPos = selStart + (newLen - oldLen);
-                if (newPos < 0) newPos = 0;
-                try {
-                    this.setSelectionRange(newPos, newPos);
-                } catch (err) {}
-
-                calculateTax();
-            });
-
-            // Handle paste from Excel or external text
-            el.addEventListener('paste', function(e) {
-                e.preventDefault();
-                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                
-                if (id === 'discountValue') {
-                    const discountType = document.querySelector('input[name="discountType"]:checked')?.value;
-                    if (discountType === 'percent') {
-                        let num = parseFloat(pastedText.replace(',', '.'));
-                        this.value = isNaN(num) ? '0' : num.toString();
-                        calculateTax();
-                        return;
-                    }
-                }
-
-                let parsed = parseNumber(pastedText);
-                if (parsed > 0) {
-                    this.value = Math.round(parsed).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                } else {
-                    this.value = '';
-                }
-                calculateTax();
-            });
+        // Format angka saja dengan titik pemisah ribuan
+        function formatAngkaTitik(number) {
+            const rounded = Math.round(Number(number) || 0);
+            return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Robust Excel & Text Number Parser
+        // Robust Excel & Text Number Parser (mendukung format Rp, koma, titik)
         function parseNumber(str) {
             if (!str) return 0;
             let s = str.toString().trim();
-            
-            // Remove currency symbols, letters, spaces
             s = s.replace(/[^0-9.,-]/g, '');
             if (!s) return 0;
 
@@ -585,8 +589,198 @@
             return isNaN(val) ? 0 : val;
         }
 
-        // Global State Payment Scheme
+        // Apply live currency formatting for manual typing & paste
+        function applyCurrencyFormatting(el) {
+            if (!el) return;
+
+            el.addEventListener('input', function() {
+                if (this.id === 'discountValue') {
+                    const discountType = document.querySelector('input[name="discountType"]:checked')?.value;
+                    if (discountType === 'percent') {
+                        calculateTax();
+                        return;
+                    }
+                }
+
+                let raw = this.value;
+                let digits = raw.replace(/[^0-9]/g, '');
+                if (!digits) {
+                    this.value = '';
+                    calculateTax();
+                    return;
+                }
+
+                let val = parseInt(digits, 10);
+                let formatted = val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                
+                let oldLen = raw.length;
+                let selStart = this.selectionStart;
+                this.value = formatted;
+                let newLen = formatted.length;
+
+                let newPos = selStart + (newLen - oldLen);
+                if (newPos < 0) newPos = 0;
+                try {
+                    this.setSelectionRange(newPos, newPos);
+                } catch (err) {}
+
+                calculateTax();
+            });
+
+            el.addEventListener('paste', function(e) {
+                e.preventDefault();
+                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
+                
+                if (this.id === 'discountValue') {
+                    const discountType = document.querySelector('input[name="discountType"]:checked')?.value;
+                    if (discountType === 'percent') {
+                        let num = parseFloat(pastedText.replace(',', '.'));
+                        this.value = isNaN(num) ? '0' : num.toString();
+                        calculateTax();
+                        return;
+                    }
+                }
+
+                let parsed = parseNumber(pastedText);
+                if (parsed > 0) {
+                    this.value = Math.round(parsed).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                } else {
+                    this.value = '';
+                }
+                calculateTax();
+            });
+        }
+
+        // State Transaksi & Daftar Barang
+        let inputMode = 'items'; // 'items' or 'direct'
         let paymentScheme = 'full';
+        let items = [
+            { id: 1, name: "Perangkat Komputer Server Utama", qty: 1, price: 189000000 }
+        ];
+
+        function setInputMode(mode) {
+            inputMode = mode;
+            const tabItems = document.getElementById('tabItemsMode');
+            const tabDirect = document.getElementById('tabDirectMode');
+            const itemsCont = document.getElementById('itemsContainer');
+            const directCont = document.getElementById('directSubtotalContainer');
+
+            if (mode === 'items') {
+                tabItems.className = "px-2.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm";
+                tabDirect.className = "px-2.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900";
+                itemsCont.classList.remove('hidden');
+                directCont.classList.add('hidden');
+            } else {
+                tabDirect.className = "px-2.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm";
+                tabItems.className = "px-2.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900";
+                directCont.classList.remove('hidden');
+                itemsCont.classList.add('hidden');
+            }
+            calculateTax();
+        }
+
+        function renderItems() {
+            const listEl = document.getElementById('itemsList');
+            const countEl = document.getElementById('itemsCountBadge');
+            if (!listEl) return;
+
+            listEl.innerHTML = '';
+            if (countEl) countEl.innerText = `${items.length} Barang / Jasa`;
+
+            items.forEach((item, index) => {
+                const totalItem = (item.qty || 0) * (item.price || 0);
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "p-2.5 bg-white border border-slate-200 rounded-lg shadow-sm space-y-2";
+                itemDiv.innerHTML = `
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-[11px] font-bold text-slate-400">#${index + 1}</span>
+                        <input type="text" placeholder="Nama barang / jasa" value="${item.name || ''}" 
+                            oninput="updateItemField(${item.id}, 'name', this.value)"
+                            class="flex-grow px-2.5 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 font-medium">
+                        ${items.length > 1 ? `
+                            <button type="button" onclick="removeItem(${item.id})" class="text-slate-400 hover:text-rose-600 p-1 transition text-xs" title="Hapus Barang">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div class="grid grid-cols-12 gap-2 items-center text-xs">
+                        <div class="col-span-3">
+                            <label class="block text-[10px] text-slate-400 mb-0.5">Qty</label>
+                            <input type="number" min="1" value="${item.qty}" 
+                                oninput="updateItemField(${item.id}, 'qty', this.value)"
+                                class="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-center font-semibold">
+                        </div>
+                        <div class="col-span-5">
+                            <label class="block text-[10px] text-slate-400 mb-0.5">Harga Satuan (Rp)</label>
+                            <input type="text" value="${formatAngkaTitik(item.price)}" 
+                                data-item-id="${item.id}"
+                                class="item-price-input w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 font-medium">
+                        </div>
+                        <div class="col-span-4 text-right">
+                            <label class="block text-[10px] text-slate-400 mb-0.5">Total</label>
+                            <span class="font-bold text-blue-900 text-xs block py-1">${formatRupiah(totalItem)}</span>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(itemDiv);
+            });
+
+            // Bind currency formatting to newly rendered item price inputs
+            document.querySelectorAll('.item-price-input').forEach(input => {
+                input.addEventListener('input', function() {
+                    const id = parseInt(this.getAttribute('data-item-id'), 10);
+                    let raw = this.value;
+                    let digits = raw.replace(/[^0-9]/g, '');
+                    let val = digits ? parseInt(digits, 10) : 0;
+                    
+                    let oldLen = raw.length;
+                    let selStart = this.selectionStart;
+                    this.value = val ? val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : '';
+                    let newLen = this.value.length;
+                    let newPos = selStart + (newLen - oldLen);
+                    try { this.setSelectionRange(newPos, newPos); } catch (e) {}
+
+                    updateItemField(id, 'price', val);
+                });
+
+                input.addEventListener('paste', function(e) {
+                    e.preventDefault();
+                    const id = parseInt(this.getAttribute('data-item-id'), 10);
+                    let text = (e.clipboardData || window.clipboardData).getData('text');
+                    let num = parseNumber(text);
+                    this.value = num > 0 ? formatAngkaTitik(num) : '';
+                    updateItemField(id, 'price', num);
+                });
+            });
+        }
+
+        function addNewItem() {
+            const nextId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+            items.push({ id: nextId, name: `Barang / Jasa #${nextId}`, qty: 1, price: 0 });
+            renderItems();
+            calculateTax();
+        }
+
+        function removeItem(id) {
+            if (items.length <= 1) return;
+            items = items.filter(i => i.id !== id);
+            renderItems();
+            calculateTax();
+        }
+
+        function updateItemField(id, field, value) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            if (field === 'qty') {
+                item.qty = Math.max(1, parseInt(value, 10) || 1);
+            } else if (field === 'price') {
+                item.price = Number(value) || 0;
+            } else {
+                item[field] = value;
+            }
+            calculateTax();
+        }
 
         function setPaymentScheme(scheme) {
             paymentScheme = scheme;
@@ -595,49 +789,51 @@
             const dpContainer = document.getElementById('dpContainer');
 
             if (scheme === 'dp') {
-                if (btnDP) {
-                    btnDP.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
-                    btnDP.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                }
-                if (btnFull) {
-                    btnFull.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                    btnFull.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
-                }
-                if (dpContainer) dpContainer.classList.remove('hidden');
+                btnDP.classList.replace('bg-white', 'bg-blue-600');
+                btnDP.classList.replace('text-slate-700', 'text-white');
+                btnDP.classList.replace('border-slate-300', 'border-blue-600');
+
+                btnFull.classList.replace('bg-blue-600', 'bg-white');
+                btnFull.classList.replace('text-white', 'text-slate-700');
+                btnFull.classList.replace('border-blue-600', 'border-slate-300');
+                dpContainer.classList.remove('hidden');
             } else {
-                if (btnFull) {
-                    btnFull.classList.remove('bg-white', 'text-slate-700', 'border-slate-300');
-                    btnFull.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                }
-                if (btnDP) {
-                    btnDP.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                    btnDP.classList.add('bg-white', 'text-slate-700', 'border-slate-300');
-                }
-                if (dpContainer) dpContainer.classList.add('hidden');
+                btnFull.classList.replace('bg-white', 'bg-blue-600');
+                btnFull.classList.replace('text-slate-700', 'text-white');
+                btnFull.classList.replace('border-slate-300', 'border-blue-600');
+
+                btnDP.classList.replace('bg-blue-600', 'bg-white');
+                btnDP.classList.replace('text-white', 'text-slate-700');
+                btnDP.classList.replace('border-blue-600', 'border-slate-300');
+                dpContainer.classList.add('hidden');
             }
             calculateTax();
         }
 
+        // Kalkulasi Utama Pajak & Penagihan
         function calculateTax() {
             const clientNameInput = document.getElementById('clientName');
             const invoiceNumInput = document.getElementById('invoiceNum');
             const clientName = clientNameInput ? clientNameInput.value.trim() || 'Pembeli / Pelanggan' : 'Pembeli / Pelanggan';
             const invoiceNum = invoiceNumInput ? invoiceNumInput.value.trim() || '-' : '-';
-            
-            const subtotalInput = document.getElementById('subtotal');
-            let rawSubtotal = subtotalInput ? parseNumber(subtotalInput.value) : 0;
 
-            // Diskon Optional
+            // Hitung Raw Subtotal
+            let rawSubtotal = 0;
+            if (inputMode === 'items') {
+                rawSubtotal = items.reduce((acc, curr) => acc + ((curr.qty || 0) * (curr.price || 0)), 0);
+            } else {
+                const subtotalInput = document.getElementById('subtotal');
+                rawSubtotal = subtotalInput ? parseNumber(subtotalInput.value) : 0;
+            }
+
+            // Diskon
             const enableDiscountEl = document.getElementById('enableDiscount');
             const isDiscountEnabled = enableDiscountEl ? enableDiscountEl.checked : false;
-            
             const discountTypeEl = document.querySelector('input[name="discountType"]:checked');
             const discountType = discountTypeEl ? discountTypeEl.value : 'nominal';
-            
             const discountValueInput = document.getElementById('discountValue');
             let rawDiscount = isDiscountEnabled && discountValueInput ? parseNumber(discountValueInput.value) : 0;
 
-            // Discount Calculation
             let discountAmount = 0;
             if (isDiscountEnabled && discountType === 'percent') {
                 discountAmount = (rawSubtotal * rawDiscount) / 100;
@@ -646,7 +842,7 @@
             }
             if (discountAmount > rawSubtotal) discountAmount = rawSubtotal;
 
-            // DP / Termyn Scheme
+            // Skema Pembayaran (DP / Full)
             let baseSubtotal = rawSubtotal;
             let baseDiscount = discountAmount;
             let schemeInfoText = "Pelunasan / Full (100%)";
@@ -654,7 +850,6 @@
             if (paymentScheme === 'dp') {
                 const dpPercentEl = document.getElementById('dpPercent');
                 const dpNominalEl = document.getElementById('dpNominal');
-                
                 const dpPercent = dpPercentEl ? parseFloat(dpPercentEl.value) || 0 : 0;
                 const dpNominal = dpNominalEl ? parseNumber(dpNominalEl.value) : 0;
                 
@@ -674,30 +869,19 @@
                 schemeInfoText = `Uang Muka / DP (${dpPercentVal}%)`;
             }
 
-            // Update Ringkasan Transaksi Utama
-            const totalProjValEl = document.getElementById('outTotalProjectVal');
-            if (totalProjValEl) totalProjValEl.innerText = formatRupiah(rawSubtotal);
-            
-            const paymentSchemeInfoEl = document.getElementById('outPaymentSchemeInfo');
-            if (paymentSchemeInfoEl) paymentSchemeInfoEl.innerText = schemeInfoText;
-
-            // Ongkos Kirim / Biaya Tambahan
+            // Ongkir / Biaya Tambahan
             const enableShippingEl = document.getElementById('enableShipping');
             const isShippingEnabled = enableShippingEl ? enableShippingEl.checked : false;
-            
             const shippingLabelInput = document.getElementById('shippingFeeLabel');
             const customShippingLabel = shippingLabelInput ? shippingLabelInput.value.trim() || 'Ongkos Kirim / Biaya Lain' : 'Ongkos Kirim / Biaya Lain';
-            
             const shippingFeeInput = document.getElementById('shippingFee');
             const shippingFee = isShippingEnabled && shippingFeeInput ? parseNumber(shippingFeeInput.value) : 0;
-            
             const shippingTaxRuleEl = document.querySelector('input[name="shippingTaxRule"]:checked');
             const shippingTaxRule = shippingTaxRuleEl ? shippingTaxRuleEl.value : 'ppn';
 
-            // 1. DPP Reguler = Sub Total - Diskon (+ Ongkir if Kena PPN)
+            // 1. DPP Reguler = Sub Total - Diskon (+ Ongkir jika Kena PPN)
             let netSubtotal = baseSubtotal - baseDiscount;
             let dppReguler = netSubtotal;
-
             if (isShippingEnabled && shippingTaxRule === 'ppn') {
                 dppReguler += shippingFee;
             }
@@ -706,19 +890,10 @@
             // 2. DPP Nilai Lain = 11/12 x DPP Reguler (Default Enabled)
             const useDPPNilaiLainEl = document.getElementById('useDPPNilaiLain');
             const useDPPNilaiLain = useDPPNilaiLainEl ? useDPPNilaiLainEl.checked : true;
-            
-            let dppNilaiLain = 0;
-            if (useDPPNilaiLain) {
-                dppNilaiLain = (11 / 12) * dppReguler;
-            }
+            let dppNilaiLain = useDPPNilaiLain ? (11 / 12) * dppReguler : 0;
 
             // 3. PPN Terutang (12%)
-            let ppnAmount = 0;
-            if (useDPPNilaiLain) {
-                ppnAmount = 0.12 * dppNilaiLain;
-            } else {
-                ppnAmount = 0.12 * dppReguler;
-            }
+            let ppnAmount = useDPPNilaiLain ? (0.12 * dppNilaiLain) : (0.12 * dppReguler);
 
             // 4. Grand Total Invoice (sebelum PPh)
             let grandTotalInvoice = dppReguler + ppnAmount;
@@ -726,7 +901,7 @@
                 grandTotalInvoice += shippingFee;
             }
 
-            // 5. Pemotongan PPh
+            // 5. Potongan PPh
             const pphTypeEl = document.getElementById('pphType');
             const pphType = pphTypeEl ? pphTypeEl.value : 'none';
             let pphPercent = 0;
@@ -751,117 +926,283 @@
             let pphDeduction = (pphBase * pphPercent) / 100;
             let netPayment = grandTotalInvoice - pphDeduction;
 
-            // Update UI Output Text & Numbers
-            const outClientEl = document.getElementById('outClientName');
-            if (outClientEl) outClientEl.innerText = clientName;
+            // Update UI Ringkasan
+            document.getElementById('outClientName').innerText = clientName;
+            document.getElementById('outInvoiceNum').innerText = invoiceNum;
+            document.getElementById('outTotalProjectVal').innerText = formatRupiah(rawSubtotal);
+            document.getElementById('outPaymentSchemeInfo').innerText = schemeInfoText;
+            document.getElementById('outSubtotal').innerText = formatRupiah(baseSubtotal);
 
-            const outInvEl = document.getElementById('outInvoiceNum');
-            if (outInvEl) outInvEl.innerText = invoiceNum;
-
-            const outSubEl = document.getElementById('outSubtotal');
-            if (outSubEl) outSubEl.innerText = formatRupiah(baseSubtotal);
-
-            // Diskon UI Row
-            const rowDiscount = document.getElementById('rowDiscount');
-            const outDiscEl = document.getElementById('outDiscount');
-            if (isDiscountEnabled && baseDiscount > 0) {
-                if (rowDiscount) rowDiscount.classList.remove('hidden');
-                if (outDiscEl) outDiscEl.innerText = formatRupiah(baseDiscount);
+            // Rincian Daftar Barang di Invoice
+            const itemsTableContainer = document.getElementById('invoiceItemsTableContainer');
+            const itemsTableBody = document.getElementById('invoiceItemsTableBody');
+            if (inputMode === 'items' && items.length > 0) {
+                itemsTableContainer.classList.remove('hidden');
+                itemsTableBody.innerHTML = items.map((item, idx) => `
+                    <tr>
+                        <td class="py-1 px-2 text-slate-400 font-mono">${idx + 1}</td>
+                        <td class="py-1 px-2 font-medium text-slate-800">${item.name || 'Barang/Jasa'}</td>
+                        <td class="py-1 px-2 text-center text-slate-600 font-mono">${item.qty}</td>
+                        <td class="py-1 px-2 text-right text-slate-600 font-mono">${formatRupiah(item.price)}</td>
+                        <td class="py-1 px-2 text-right font-semibold text-slate-900 font-mono">${formatRupiah(item.qty * item.price)}</td>
+                    </tr>
+                `).join('');
             } else {
-                if (rowDiscount) rowDiscount.classList.add('hidden');
+                itemsTableContainer.classList.add('hidden');
             }
 
-            const outDPPRegEl = document.getElementById('outDPPReguler');
-            if (outDPPRegEl) outDPPRegEl.innerText = formatRupiah(dppReguler);
+            // Diskon UI
+            const rowDiscount = document.getElementById('rowDiscount');
+            if (isDiscountEnabled && baseDiscount > 0) {
+                rowDiscount.classList.remove('hidden');
+                document.getElementById('outDiscount').innerText = formatRupiah(baseDiscount);
+            } else {
+                rowDiscount.classList.add('hidden');
+            }
+
+            document.getElementById('outDPPReguler').innerText = formatRupiah(dppReguler);
 
             // DPP Nilai Lain UI
             const rowNilaiLain = document.getElementById('rowDPPNilaiLain');
-            const outDPPNLEl = document.getElementById('outDPPNilaiLain');
             if (useDPPNilaiLain) {
-                if (rowNilaiLain) rowNilaiLain.classList.remove('hidden');
-                if (outDPPNLEl) outDPPNLEl.innerText = formatRupiah(dppNilaiLain);
+                rowNilaiLain.classList.remove('hidden');
+                document.getElementById('outDPPNilaiLain').innerText = formatRupiah(dppNilaiLain);
             } else {
-                if (rowNilaiLain) rowNilaiLain.classList.add('hidden');
+                rowNilaiLain.classList.add('hidden');
             }
 
-            const outPPNEl = document.getElementById('outPPN');
-            if (outPPNEl) outPPNEl.innerText = formatRupiah(ppnAmount);
+            document.getElementById('outPPN').innerText = formatRupiah(ppnAmount);
 
-            // Extra Fee / Shipping UI
+            // Ongkir / Biaya UI
             const rowShipping = document.getElementById('rowShipping');
-            const outShipLabel = document.getElementById('outShippingLabel');
-            const outShipEl = document.getElementById('outShipping');
             if (isShippingEnabled && shippingFee > 0) {
-                if (rowShipping) rowShipping.classList.remove('hidden');
-                if (outShipLabel) outShipLabel.innerText = `* ${customShippingLabel}:`;
-                if (outShipEl) outShipEl.innerText = formatRupiah(shippingFee) + (shippingTaxRule === 'non-ppn' ? ' (Reimbursement)' : ' (Kena PPN)');
+                rowShipping.classList.remove('hidden');
+                document.getElementById('outShippingLabel').innerText = `* ${customShippingLabel}:`;
+                document.getElementById('outShipping').innerText = formatRupiah(shippingFee) + (shippingTaxRule === 'non-ppn' ? ' (Reimbursement)' : ' (Kena PPN)');
             } else {
-                if (rowShipping) rowShipping.classList.add('hidden');
+                rowShipping.classList.add('hidden');
             }
 
-            const outGTEi = document.getElementById('outGrandTotal');
-            if (outGTEi) outGTEi.innerText = formatRupiah(grandTotalInvoice);
+            // Grand Total & Terbilang
+            const roundedGrandTotal = Math.round(grandTotalInvoice);
+            document.getElementById('outGrandTotal').innerText = formatRupiah(roundedGrandTotal);
+            
+            const terbilangGrandTotal = angkaKeTerbilang(roundedGrandTotal);
+            document.getElementById('outTerbilang').innerText = `# ${terbilangGrandTotal} #`;
 
-            // PPh UI
+            // PPh UI & Terbilang Net
             const labelPPhType = document.getElementById('labelPPhType');
             const outPPhDeduction = document.getElementById('outPPhDeduction');
             const outNetPayment = document.getElementById('outNetPayment');
+            const containerTerbilangNet = document.getElementById('containerTerbilangNet');
+            const outTerbilangNet = document.getElementById('outTerbilangNet');
 
             if (pphType !== 'none' && pphDeduction > 0) {
-                if (labelPPhType) labelPPhType.innerText = `* ${pphName}:`;
-                if (outPPhDeduction) outPPhDeduction.innerText = `(${formatRupiah(pphDeduction)})`;
-                if (outNetPayment) outNetPayment.innerText = formatRupiah(netPayment);
+                labelPPhType.innerText = `* ${pphName}:`;
+                outPPhDeduction.innerText = `(${formatRupiah(pphDeduction)})`;
+                const roundedNet = Math.round(netPayment);
+                outNetPayment.innerText = formatRupiah(roundedNet);
+                
+                if (containerTerbilangNet && outTerbilangNet) {
+                    containerTerbilangNet.classList.remove('hidden');
+                    outTerbilangNet.innerText = `# ${angkaKeTerbilang(roundedNet)} #`;
+                }
             } else {
-                if (labelPPhType) labelPPhType.innerText = `* Potongan PPh:`;
-                if (outPPhDeduction) outPPhDeduction.innerText = `(Rp 0)`;
-                if (outNetPayment) outNetPayment.innerText = formatRupiah(grandTotalInvoice);
+                labelPPhType.innerText = `* Potongan PPh:`;
+                outPPhDeduction.innerText = `(Rp 0)`;
+                outNetPayment.innerText = formatRupiah(roundedGrandTotal);
+                if (containerTerbilangNet) containerTerbilangNet.classList.add('hidden');
             }
         }
 
-        // Helper function for safe event listener attachment
+        // Salin Rincian Teks Lengkap ke Clipboard
+        function copyToClipboard() {
+            const invoiceNum = document.getElementById('outInvoiceNum')?.innerText || '-';
+            const clientName = document.getElementById('outClientName')?.innerText || '-';
+            const totalProjectVal = document.getElementById('outTotalProjectVal')?.innerText || 'Rp 0';
+            const schemeInfo = document.getElementById('outPaymentSchemeInfo')?.innerText || '-';
+            const subtotal = document.getElementById('outSubtotal')?.innerText || 'Rp 0';
+            const isDiscountEnabled = document.getElementById('enableDiscount')?.checked || false;
+            const discount = document.getElementById('outDiscount')?.innerText || 'Rp 0';
+            const dppReguler = document.getElementById('outDPPReguler')?.innerText || 'Rp 0';
+            const useNilaiLain = document.getElementById('useDPPNilaiLain')?.checked || false;
+            const dppNilaiLain = document.getElementById('outDPPNilaiLain')?.innerText || 'Rp 0';
+            const ppn = document.getElementById('outPPN')?.innerText || 'Rp 0';
+            const isShippingEnabled = document.getElementById('enableShipping')?.checked || false;
+            const customShippingLabel = document.getElementById('shippingFeeLabel')?.value.trim() || 'Ongkos Kirim / Biaya Lain';
+            const shipping = document.getElementById('outShipping')?.innerText || 'Rp 0';
+            const grandTotal = document.getElementById('outGrandTotal')?.innerText || 'Rp 0';
+            const terbilangText = document.getElementById('outTerbilang')?.innerText || '';
+            const pphType = document.getElementById('pphType')?.value || 'none';
+            const pphDeduction = document.getElementById('outPPhDeduction')?.innerText || '(Rp 0)';
+            const netPayment = document.getElementById('outNetPayment')?.innerText || 'Rp 0';
+
+            let text = `---
+RINCIAN PENAGIHAN & PERPAJAKAN
+Invoice: ${invoiceNum} | Kepada: ${clientName}
+Total Nilai Transaksi Utama: ${totalProjectVal}
+Skema Penagihan: ${schemeInfo}
+-----------------------------------\n`;
+
+            if (inputMode === 'items' && items.length > 0) {
+                text += `DAFTAR BARANG / JASA:\n`;
+                items.forEach((item, idx) => {
+                    text += `${idx + 1}. ${item.name} (${item.qty} x ${formatRupiah(item.price)}) = ${formatRupiah(item.qty * item.price)}\n`;
+                });
+                text += `-----------------------------------\n`;
+            }
+
+            text += `* Sub Total Penagihan Ini: ${subtotal}\n`;
+
+            if (isDiscountEnabled && parseNumber(document.getElementById('discountValue')?.value) > 0) {
+                text += `* Diskon: ${discount}\n`;
+            }
+
+            text += `* DPP Reguler: ${dppReguler}\n`;
+            if (useNilaiLain) {
+                text += `* DPP Nilai Lain (11/12): ${dppNilaiLain}\n`;
+            }
+            text += `* PPN 12%: ${ppn}\n`;
+
+            if (isShippingEnabled && parseNumber(document.getElementById('shippingFee')?.value) > 0) {
+                text += `* ${customShippingLabel}: ${shipping}\n`;
+            }
+
+            text += `-----------------------------------
+* GRAND TOTAL TAGIHAN (INVOICE): ${grandTotal}
+* Terbilang: ${terbilangText}
+`;
+
+            if (pphType !== 'none') {
+                text += `
+ESTIMASI PEMBAYARAN (JIKA ADA POTONGAN PPh):
+* Potongan PPh: ${pphDeduction}
+* TOTAL DITERIMA / DIBAYARKAN (NET): ${netPayment}
+`;
+            }
+            text += `---`;
+
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast("Teks rincian faktur & terbilang berhasil disalin!");
+        }
+
+        // Salin Nominal atau Kalimat Tunggal
+        function copySingleValue(elementId) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+
+            let textVal = el.innerText.trim();
+            // Bersihkan suffix seperti (Kena PPN) atau (Reimbursement)
+            textVal = textVal.replace(/\s*\((Kena PPN|Reimbursement)\)/gi, '');
+            // Jika terbilang, bersihkan tanda pagar pagar di depan/belakang
+            if (elementId === 'outTerbilang' || elementId === 'outTerbilangNet') {
+                textVal = textVal.replace(/^#\s*|\s*#$/g, '');
+            }
+
+            const dummy = document.createElement("textarea");
+            document.body.appendChild(dummy);
+            dummy.value = textVal;
+            dummy.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummy);
+
+            showToast(`"${textVal}" berhasil disalin!`);
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMsg');
+            if (toastMsg) toastMsg.innerText = msg;
+            if (toast) {
+                toast.classList.remove('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'pointer-events-none');
+                }, 3000);
+            }
+        }
+
+        // Load Preset Cepat
+        function loadPreset(type) {
+            document.getElementById('useDPPNilaiLain').checked = true;
+            document.getElementById('enableDiscount').checked = false;
+            document.getElementById('discountFieldsContainer').classList.add('hidden');
+            document.getElementById('discountStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
+            document.getElementById('discountStatusBadge').innerText = 'Nonaktif';
+
+            document.getElementById('enableShipping').checked = false;
+            document.getElementById('shippingFieldsContainer').classList.add('hidden');
+            document.getElementById('shippingStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
+            document.getElementById('shippingStatusBadge').innerText = 'Nonaktif';
+
+            document.getElementById('pphType').value = 'none';
+            document.getElementById('customPphContainer').classList.add('hidden');
+            setPaymentScheme('full');
+
+            if (type === 'transaksi_189jt') {
+                setInputMode('items');
+                items = [
+                    { id: 1, name: "Perangkat Server Enterprise", qty: 1, price: 189000000 }
+                ];
+                renderItems();
+            } else if (type === 'jasa_pph23') {
+                setInputMode('items');
+                items = [
+                    { id: 1, name: "Jasa Pembuatan Software ERP", qty: 1, price: 25000000 }
+                ];
+                renderItems();
+                document.getElementById('pphType').value = 'pph23_jasa';
+            } else if (type === 'dp_termin') {
+                setInputMode('items');
+                items = [
+                    { id: 1, name: "Pengadaan Mesin Produksi", qty: 1, price: 100000000 }
+                ];
+                renderItems();
+                setPaymentScheme('dp');
+                document.getElementById('dpPercent').value = '30';
+            }
+
+            calculateTax();
+        }
+
+        // Helper untuk event listener aman
         function attachListener(id, event, callback) {
             const el = document.getElementById(id);
-            if (el) {
-                el.addEventListener(event, callback);
-            }
+            if (el) el.addEventListener(event, callback);
         }
 
-        // Toggle Discount Section
+        // Inisialisasi Event
         attachListener('enableDiscount', 'change', function() {
             const container = document.getElementById('discountFieldsContainer');
             const badge = document.getElementById('discountStatusBadge');
             if (this.checked) {
-                if (container) container.classList.remove('hidden');
-                if (badge) {
-                    badge.innerText = 'Aktif';
-                    badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded';
-                }
+                container.classList.remove('hidden');
+                badge.innerText = 'Aktif';
+                badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded';
             } else {
-                if (container) container.classList.add('hidden');
-                if (badge) {
-                    badge.innerText = 'Nonaktif';
-                    badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
-                }
+                container.classList.add('hidden');
+                badge.innerText = 'Nonaktif';
+                badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
             }
             calculateTax();
         });
 
-        // Toggle Shipping Section
         attachListener('enableShipping', 'change', function() {
             const container = document.getElementById('shippingFieldsContainer');
             const badge = document.getElementById('shippingStatusBadge');
             if (this.checked) {
-                if (container) container.classList.remove('hidden');
-                if (badge) {
-                    badge.innerText = 'Aktif';
-                    badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded';
-                }
+                container.classList.remove('hidden');
+                badge.innerText = 'Aktif';
+                badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded';
             } else {
-                if (container) container.classList.add('hidden');
-                if (badge) {
-                    badge.innerText = 'Nonaktif';
-                    badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
-                }
+                container.classList.add('hidden');
+                badge.innerText = 'Nonaktif';
+                badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
             }
             calculateTax();
         });
@@ -870,7 +1211,7 @@
         attachListener('clientName', 'input', calculateTax);
         attachListener('invoiceNum', 'input', calculateTax);
         attachListener('useDPPNilaiLain', 'change', calculateTax);
-        
+
         attachListener('pphType', 'change', function() {
             const container = document.getElementById('customPphContainer');
             if (container) {
@@ -891,10 +1232,9 @@
                 const prefix = document.getElementById('discountPrefix');
                 const discountInput = document.getElementById('discountValue');
                 if (prefix) prefix.innerText = this.value === 'percent' ? '%' : 'Rp';
-                
                 if (this.value === 'nominal' && discountInput) {
                     let num = parseNumber(discountInput.value);
-                    discountInput.value = num > 0 ? Math.round(num).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") : '0';
+                    discountInput.value = num > 0 ? formatAngkaTitik(num) : '0';
                 }
                 calculateTax();
             });
@@ -904,185 +1244,13 @@
             radio.addEventListener('change', calculateTax);
         });
 
-        // Presets
-        function loadPreset(type) {
-            const dppNL = document.getElementById('useDPPNilaiLain');
-            if (dppNL) dppNL.checked = true;
-            
-            // Reset Discount Toggle
-            const enableDisc = document.getElementById('enableDiscount');
-            if (enableDisc) enableDisc.checked = false;
-            
-            const discContainer = document.getElementById('discountFieldsContainer');
-            if (discContainer) discContainer.classList.add('hidden');
-            
-            const discBadge = document.getElementById('discountStatusBadge');
-            if (discBadge) {
-                discBadge.innerText = 'Nonaktif';
-                discBadge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
-            }
-            
-            // Reset Shipping Toggle
-            const enableShip = document.getElementById('enableShipping');
-            if (enableShip) enableShip.checked = false;
-
-            const shipContainer = document.getElementById('shippingFieldsContainer');
-            if (shipContainer) shipContainer.classList.add('hidden');
-
-            const shipBadge = document.getElementById('shippingStatusBadge');
-            if (shipBadge) {
-                shipBadge.innerText = 'Nonaktif';
-                shipBadge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
-            }
-            
-            const pphSelect = document.getElementById('pphType');
-            if (pphSelect) pphSelect.value = 'none';
-
-            const customPphCont = document.getElementById('customPphContainer');
-            if (customPphCont) customPphCont.classList.add('hidden');
-
-            setPaymentScheme('full');
-
-            const radioNominal = document.querySelector('input[name="discountType"][value="nominal"]');
-            if (radioNominal) radioNominal.checked = true;
-
-            const discPrefix = document.getElementById('discountPrefix');
-            if (discPrefix) discPrefix.innerText = 'Rp';
-
-            const discValue = document.getElementById('discountValue');
-            if (discValue) discValue.value = '0';
-
-            const shipFee = document.getElementById('shippingFee');
-            if (shipFee) shipFee.value = '0';
-
-            const subInput = document.getElementById('subtotal');
-
-            if (type === 'transaksi_189jt') {
-                if (subInput) subInput.value = '189.000.000';
-            } else if (type === 'jasa_pph23') {
-                if (subInput) subInput.value = '25.000.000';
-                if (pphSelect) pphSelect.value = 'pph23_jasa';
-            } else if (type === 'dp_termin') {
-                if (subInput) subInput.value = '100.000.000';
-                setPaymentScheme('dp');
-                const dpP = document.getElementById('dpPercent');
-                if (dpP) dpP.value = '30';
-            }
-
-            calculateTax();
-        }
-
-        // Clipboard Copy Text
-        function copyToClipboard() {
-            const invoiceNum = document.getElementById('outInvoiceNum')?.innerText || '-';
-            const clientName = document.getElementById('outClientName')?.innerText || '-';
-            const totalProjectVal = document.getElementById('outTotalProjectVal')?.innerText || 'Rp 0';
-            const schemeInfo = document.getElementById('outPaymentSchemeInfo')?.innerText || '-';
-
-            const subtotal = document.getElementById('outSubtotal')?.innerText || 'Rp 0';
-            const isDiscountEnabled = document.getElementById('enableDiscount')?.checked || false;
-            const discount = document.getElementById('outDiscount')?.innerText || 'Rp 0';
-            const dppReguler = document.getElementById('outDPPReguler')?.innerText || 'Rp 0';
-            const useNilaiLain = document.getElementById('useDPPNilaiLain')?.checked || false;
-            const dppNilaiLain = document.getElementById('outDPPNilaiLain')?.innerText || 'Rp 0';
-            const ppn = document.getElementById('outPPN')?.innerText || 'Rp 0';
-            
-            const isShippingEnabled = document.getElementById('enableShipping')?.checked || false;
-            const customShippingLabel = document.getElementById('shippingFeeLabel')?.value.trim() || 'Ongkos Kirim / Biaya Lain';
-            const shipping = document.getElementById('outShipping')?.innerText || 'Rp 0';
-            
-            const grandTotal = document.getElementById('outGrandTotal')?.innerText || 'Rp 0';
-
-            const pphType = document.getElementById('pphType')?.value || 'none';
-            const pphDeduction = document.getElementById('outPPhDeduction')?.innerText || '(Rp 0)';
-            const netPayment = document.getElementById('outNetPayment')?.innerText || 'Rp 0';
-
-            let text = `---
-RINCIAN PENAGIHAN & PERPAJAKAN
-Invoice: ${invoiceNum} | Kepada: ${clientName}
-Total Nilai Transaksi Utama: ${totalProjectVal}
-Skema Penagihan: ${schemeInfo}
------------------------------------
-* Sub Total Penagihan Ini: ${subtotal}\n`;
-
-            if (isDiscountEnabled && parseNumber(document.getElementById('discountValue')?.value) > 0) {
-                text += `* Diskon: ${discount}\n`;
-            }
-
-            text += `* DPP Reguler: ${dppReguler}\n`;
-
-            if (useNilaiLain) {
-                text += `* DPP Nilai Lain (11/12): ${dppNilaiLain}\n`;
-            }
-
-            text += `* PPN 12%: ${ppn}\n`;
-
-            if (isShippingEnabled && parseNumber(document.getElementById('shippingFee')?.value) > 0) {
-                text += `* ${customShippingLabel}: ${shipping}\n`;
-            }
-
-            text += `-----------------------------------
-* GRAND TOTAL TAGIHAN (INVOICE): ${grandTotal}
-`;
-
-            if (pphType !== 'none') {
-                text += `
-ESTIMASI PEMBAYARAN (JIKA ADA POTONGAN PPh):
-* Potongan PPh: ${pphDeduction}
-* TOTAL DITERIMA / DIBAYARKAN (NET): ${netPayment}
-`;
-            }
-
-            text += `---`;
-
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-
-            showToast("Teks rincian berhasil disalin ke clipboard!");
-        }
-
-        // Copy single value function
-        function copySingleValue(elementId) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-
-            let textVal = el.innerText.trim();
-            // Bersihkan teks suffix seperti "(Kena PPN)" atau "(Reimbursement)"
-            textVal = textVal.replace(/\s*\((Kena PPN|Reimbursement)\)/gi, '');
-
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = textVal;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-
-            showToast(`Nominal ${textVal} berhasil disalin!`);
-        }
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMsg');
-            if (toastMsg) toastMsg.innerText = msg;
-            if (toast) {
-                toast.classList.remove('opacity-0', 'pointer-events-none');
-                setTimeout(() => {
-                    toast.classList.add('opacity-0', 'pointer-events-none');
-                }, 3000);
-            }
-        }
-
+        // Window Load
         window.onload = function() {
-            // Attach auto-formatting for typing & pasting
-            applyCurrencyFormatting('subtotal');
-            applyCurrencyFormatting('discountValue');
-            applyCurrencyFormatting('dpNominal');
-            applyCurrencyFormatting('shippingFee');
-
+            renderItems();
+            applyCurrencyFormatting(document.getElementById('subtotal'));
+            applyCurrencyFormatting(document.getElementById('discountValue'));
+            applyCurrencyFormatting(document.getElementById('dpNominal'));
+            applyCurrencyFormatting(document.getElementById('shippingFee'));
             calculateTax();
         };
     </script>
