@@ -3,498 +3,735 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Pajak, Faktur & Penagihan Otomatis Indonesia</title>
+    <title>Kalkulator Pajak & Faktur Pro Indonesia - Pcs & Timbangan Cor Logam (Kg)</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Inter', sans-serif; }
+        .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         @media print {
             .no-print { display: none !important; }
             .print-only { display: block !important; }
+            body { background: #ffffff !important; color: #0f172a !important; padding: 0 !important; margin: 0 !important; }
+            main { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }
+            .grid { display: block !important; }
+            .lg\:col-span-6 { width: 100% !important; max-width: 100% !important; }
+            .print-container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
             .print-card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+            #printableInvoiceArea { padding: 0 !important; border: none !important; }
+            @page { margin: 10mm; size: auto; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
-    <!-- Header -->
-    <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800 no-print">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+    <!-- Top Navigation Bar -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center space-x-3">
-                <div class="bg-blue-600 p-2.5 rounded-xl text-white shadow-md">
-                    <i class="fa-solid fa-calculator text-xl"></i>
+                <div class="bg-gradient-to-tr from-blue-600 to-indigo-500 p-2.5 rounded-xl text-white shadow-lg shadow-blue-500/30 flex items-center justify-center">
+                    <i class="fa-solid fa-file-invoice-dollar text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold tracking-tight">Kalkulator Pajak & Faktur Indonesia</h1>
-                    <p class="text-xs text-slate-400">Regulasi PPN 12%, DPP Nilai Lain (11/12), Terbilang & Rincian Barang</p>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg font-bold tracking-tight text-white">Kalkulator Pajak & Faktur Pro</h1>
+                        <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full">v3.0 Multi-Satuan</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Transaksi Umum (Pcs) & Timbangan Cor Logam (Kg) | PPN 12% & DPP Nilai Lain</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
-                <span class="bg-blue-900/60 text-blue-300 border border-blue-700/50 text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1.5">
-                    <i class="fa-solid fa-shield-halved"></i> PPN 12% & DPP 11/12
-                </span>
+            
+            <!-- Quick Action Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <div class="hidden md:flex items-center gap-1.5 bg-slate-800/80 border border-slate-700 text-xs px-3 py-1.5 rounded-lg text-slate-300">
+                    <i class="fa-solid fa-calendar-check text-blue-400"></i>
+                    <span id="headerCurrentDate"></span>
+                </div>
+                <button onclick="resetAllFields()" title="Kembali ke Kondisi Awal Bersih (0)" class="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-rotate-left text-amber-400"></i>
+                    <span class="hidden sm:inline">Reset Form (0)</span>
+                </button>
+                <button onclick="cetakFaktur()" class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak / PDF</span>
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
+    <!-- Main Application Body -->
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-            <!-- LEFT FORM COLUMN -->
-            <div class="lg:col-span-6 space-y-6 no-print">
-                
-                <!-- Card Input Utama -->
+            <!-- LEFT FORM COLUMN (Inputs & Configurations) -->
+            <div class="lg:col-span-6 space-y-5 no-print">
+
+                <!-- Collapsible Company & Client Identity Section -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 bg-slate-100/70 border-b border-slate-200 flex justify-between items-center cursor-pointer" onclick="toggleSection('companyMetaSection', 'companyChevron')">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-building-user text-blue-600 text-sm"></i>
+                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-700">Identitas Usaha & Klien</h2>
+                        </div>
+                        <i id="companyChevron" class="fa-solid fa-chevron-down text-slate-400 transition-transform duration-200 text-xs"></i>
+                    </div>
+                    
+                    <div id="companyMetaSection" class="p-4 sm:p-5 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Nama Usaha / Penjual</label>
+                                <input type="text" id="sellerName" value="CV Mandiri Logam Jaya" placeholder="Nama Usaha Anda"
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">NPWP / NIK Penjual</label>
+                                <input type="text" id="sellerTaxId" value="01.234.567.8-012.000" placeholder="00.000.000.0-000.000"
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition font-mono-code">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Nama Klien / Pembeli</label>
+                                <input type="text" id="clientName" value="" placeholder="Nama Pembeli / Perusahaan Klien"
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition font-medium">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">NPWP / NIK Pembeli</label>
+                                <input type="text" id="clientTaxId" value="" placeholder="NPWP / NIK Pembeli (Opsional)"
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition font-mono-code">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Nomor Nota / Invoice</label>
+                                <input type="text" id="invoiceNum" value="" placeholder="INV/..."
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition font-mono-code">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Tanggal Transaksi</label>
+                                <input type="date" id="invoiceDate"
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-slate-600 mb-1">Jatuh Tempo</label>
+                                <input type="date" id="dueDate"
+                                    class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
+                            </div>
+                        </div>
+
+                        <!-- Bank Transfer Info -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <label class="block text-[11px] font-semibold text-slate-700 uppercase tracking-wide">
+                                <i class="fa-solid fa-credit-card text-blue-600 mr-1"></i> Rekening Pembayaran (Ditampilkan di Nota)
+                            </label>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <input type="text" id="bankName" value="Bank BCA" placeholder="Nama Bank (cth: BCA)"
+                                    class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg">
+                                <input type="text" id="bankAccount" value="8830-192-881" placeholder="Nomor Rekening"
+                                    class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg font-mono-code">
+                                <input type="text" id="bankHolder" value="CV Mandiri Logam Jaya" placeholder="Atas Nama"
+                                    class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 space-y-5">
                     
-                    <!-- Informasi Klien & Invoice -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Nama Klien / Perusahaan</label>
-                            <input type="text" id="clientName" placeholder="PT Contoh Indonesia" value="PT Contoh Indonesia"
-                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Nomor Invoice</label>
-                            <input type="text" id="invoiceNum" placeholder="INV/2026/08/001" value="INV/2026/08/001" 
-                                class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                    <!-- Pricing Mode: Include PPN vs Exclude PPN -->
+                    <div class="p-3.5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 rounded-xl">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div>
+                                <span class="text-xs font-bold text-blue-900 block flex items-center gap-1.5">
+                                    <i class="fa-solid fa-tags text-blue-600"></i> Mode Penetapan Harga
+                                </span>
+                                <span class="text-[11px] text-blue-700/80" id="taxModeDescription">
+                                    Harga belum termasuk pajak (PPN dihitung sebagai penambah subtotal).
+                                </span>
+                            </div>
+                            <div class="inline-flex p-1 bg-white rounded-lg border border-blue-200 text-xs shadow-sm self-start sm:self-auto">
+                                <button type="button" id="btnTaxExcluded" onclick="setTaxMode('excluded')"
+                                    class="px-3 py-1 rounded-md font-semibold text-xs transition bg-blue-600 text-white shadow-sm">
+                                    Belum PPN
+                                </button>
+                                <button type="button" id="btnTaxIncluded" onclick="setTaxMode('included')"
+                                    class="px-3 py-1 rounded-md font-semibold text-xs transition text-slate-600 hover:text-slate-900">
+                                    Termasuk PPN
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Pilihan Mode Input: Rincian Barang vs Subtotal Langsung -->
+                    <!-- Input Mode Switcher: Items breakdown vs Direct Subtotal -->
                     <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <label class="block text-xs font-semibold text-slate-800">Metode Penginputan Transaksi</label>
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-xs font-bold text-slate-800 uppercase tracking-wide">
+                                <i class="fa-solid fa-layer-group text-blue-600 mr-1"></i> Metode Input Transaksi
+                            </label>
                             <div class="inline-flex p-0.5 bg-slate-100 rounded-lg border border-slate-200 text-xs">
                                 <button type="button" id="tabItemsMode" onclick="setInputMode('items')"
-                                    class="px-2.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm">
-                                    <i class="fa-solid fa-list-check mr-1"></i> Daftar Barang
+                                    class="px-3 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm">
+                                    <i class="fa-solid fa-list-check mr-1"></i> Rincian Barang
                                 </button>
                                 <button type="button" id="tabDirectMode" onclick="setInputMode('direct')"
-                                    class="px-2.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900">
-                                    <i class="fa-solid fa-calculator mr-1"></i> Subtotal Langsung
+                                    class="px-3 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900">
+                                    <i class="fa-solid fa-calculator mr-1"></i> Subtotal Global
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Bagian 1: Daftar Barang Dinamis -->
-                        <div id="itemsContainer" class="space-y-2.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                        <!-- 1. Dynamic Items List (Supports Pcs & Kg metal cast transactions) -->
+                        <div id="itemsContainer" class="space-y-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
                             <div class="flex justify-between items-center pb-2 border-b border-slate-200">
-                                <span class="text-xs font-bold uppercase tracking-wider text-slate-600">
-                                    <i class="fa-solid fa-boxes-stacked text-blue-600 mr-1"></i> Item Barang / Jasa
-                                </span>
-                                <span class="text-[11px] text-slate-500" id="itemsCountBadge">1 Barang</span>
+                                <div>
+                                    <span class="text-xs font-bold text-slate-700 block">
+                                        Daftar Barang / Jasa Penyerahan
+                                    </span>
+                                    <span class="text-[10px] text-slate-400">Default satuan: <strong>Pcs</strong>. Tersedia opsi <strong>Kg</strong> untuk timbangan berat cor logam.</span>
+                                </div>
+                                <span class="text-[11px] font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full" id="itemsCountBadge">1 Item</span>
                             </div>
 
-                            <!-- List Item Rows -->
-                            <div id="itemsList" class="space-y-2 max-h-72 overflow-y-auto pr-1">
-                                <!-- Generated dynamically via JavaScript -->
+                            <div id="itemsList" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                                <!-- Populated dynamically by JS -->
                             </div>
 
-                            <!-- Tombol Tambah Barang -->
-                            <button type="button" onclick="addNewItem()" 
-                                class="w-full py-2 px-3 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg transition flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-plus"></i>
-                                <span>Tambah Baris Barang / Jasa</span>
-                            </button>
+                            <div class="flex gap-2 pt-1">
+                                <button type="button" onclick="addNewItem()" 
+                                    class="flex-1 py-2 px-3 text-xs font-semibold text-blue-700 bg-white hover:bg-blue-50 border border-blue-300 rounded-lg transition shadow-sm flex items-center justify-center gap-1.5">
+                                    <i class="fa-solid fa-plus text-blue-600"></i>
+                                    <span>Tambah Baris Barang</span>
+                                </button>
+                                <button type="button" onclick="clearAllItems()" 
+                                    class="py-2 px-3 text-xs font-medium text-slate-500 hover:text-rose-600 bg-white hover:bg-rose-50 border border-slate-200 rounded-lg transition" title="Kosongkan semua baris">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Bagian 2: Subtotal Langsung (Alternatif) -->
-                        <div id="directSubtotalContainer" class="hidden p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
-                            <label class="block text-xs font-semibold text-slate-700 mb-1">
-                                Sub Total Transaksi (Rp) <span class="text-rose-500">*</span>
+                        <!-- 2. Direct Subtotal Mode -->
+                        <div id="directSubtotalContainer" class="hidden p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                            <label class="block text-xs font-semibold text-slate-700">
+                                Nilai Transaksi Bersih (Sebelum Pajak) <span class="text-rose-500">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-sm">Rp</span>
-                                <input type="text" id="subtotal" placeholder="0" value="189.000.000"
-                                    class="w-full pl-10 pr-3 py-2.5 font-semibold text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-base">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm">Rp</span>
+                                <input type="text" id="subtotal" placeholder="0" value="0"
+                                    class="w-full pl-10 pr-3 py-2.5 font-bold text-slate-800 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition text-base font-mono-code">
                             </div>
-                            <p class="text-[11px] text-slate-400 mt-1"><i class="fa-solid fa-paste text-blue-500 mr-1"></i> Mendukung ketik manual langsung berformat titik otomatis atau copas Excel (Rp189,000,000).</p>
+                            <p class="text-[11px] text-slate-500 flex items-center gap-1">
+                                <i class="fa-solid fa-info-circle text-blue-500"></i>
+                                Mendukung ketik angka langsung atau copas format angka desimal & pemisah ribuan.
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Diskon (Opsional) -->
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <!-- Discount Configuration -->
+                    <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
                         <div class="flex items-center justify-between">
-                            <label for="enableDiscount" class="text-xs font-semibold text-slate-800 cursor-pointer flex items-center gap-2">
+                            <label for="enableDiscount" class="text-xs font-semibold text-slate-800 cursor-pointer flex items-center gap-2 select-none">
                                 <input type="checkbox" id="enableDiscount" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer">
-                                <span>Gunakan Diskon Transaksi</span>
+                                <span>Potongan Harga / Diskon Transaksi</span>
                             </label>
                             <span class="text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded" id="discountStatusBadge">Nonaktif</span>
                         </div>
 
                         <div id="discountFieldsContainer" class="hidden space-y-2 pt-2 border-t border-slate-200">
                             <div class="flex justify-between items-center text-xs">
-                                <span class="text-slate-600 font-medium">Tipe Diskon</span>
-                                <div class="flex items-center gap-2">
-                                    <label class="cursor-pointer flex items-center gap-1 text-slate-700">
+                                <span class="text-slate-600 font-medium">Bentuk Diskon</span>
+                                <div class="flex items-center gap-3">
+                                    <label class="cursor-pointer flex items-center gap-1.5 text-slate-700">
                                         <input type="radio" name="discountType" value="nominal" checked class="text-blue-600"> Nominal (Rp)
                                     </label>
-                                    <label class="cursor-pointer flex items-center gap-1 text-slate-700">
-                                        <input type="radio" name="discountType" value="percent" class="text-blue-600"> Persen (%)
+                                    <label class="cursor-pointer flex items-center gap-1.5 text-slate-700">
+                                        <input type="radio" name="discountType" value="percent" class="text-blue-600"> Persentase (%)
                                     </label>
                                 </div>
                             </div>
                             <div class="relative">
-                                <span id="discountPrefix" class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-sm">Rp</span>
+                                <span id="discountPrefix" class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-semibold text-sm">Rp</span>
                                 <input type="text" id="discountValue" placeholder="0" value="0"
-                                    class="w-full pl-10 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                                    class="w-full pl-10 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition font-mono-code">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Skema Pembayaran (Termyn / DP / Pelunasan) -->
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                        <label class="block text-xs font-semibold text-slate-700">Skema Pembayaran</label>
+                    <!-- Payment Scheme: Full vs Termyn / DP -->
+                    <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-semibold text-slate-700">Skema Penagihan</label>
+                            <span class="text-[10px] text-slate-500" id="dpCalculatedNote">100% Pembayaran</span>
+                        </div>
                         <div class="grid grid-cols-2 gap-2">
                             <button type="button" id="btnPaymentFull" onclick="setPaymentScheme('full')" 
-                                class="py-1.5 px-3 text-xs font-medium rounded-lg border bg-blue-600 text-white border-blue-600 transition">
-                                Full / Pelunasan (100%)
+                                class="py-2 px-3 text-xs font-semibold rounded-lg border bg-blue-600 text-white border-blue-600 transition shadow-sm">
+                                <i class="fa-solid fa-circle-check mr-1"></i> Penuh / Pelunasan (100%)
                             </button>
                             <button type="button" id="btnPaymentDP" onclick="setPaymentScheme('dp')" 
-                                class="py-1.5 px-3 text-xs font-medium rounded-lg border bg-white text-slate-700 border-slate-300 hover:bg-slate-100 transition">
-                                Uang Muka (DP) / Termyn
+                                class="py-2 px-3 text-xs font-semibold rounded-lg border bg-white text-slate-700 border-slate-300 hover:bg-slate-100 transition shadow-sm">
+                                <i class="fa-solid fa-receipt mr-1"></i> Uang Muka (DP) / Termin
                             </button>
                         </div>
-                        <div id="dpContainer" class="hidden pt-2 grid grid-cols-2 gap-2">
+                        <div id="dpContainer" class="hidden pt-2 grid grid-cols-2 gap-3 border-t border-slate-200">
                             <div>
-                                <label class="block text-[11px] text-slate-500 mb-1">Persentase DP (%)</label>
-                                <input type="number" id="dpPercent" value="30" min="1" max="100" 
-                                    class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500">
+                                <label class="block text-[11px] text-slate-600 mb-1 font-medium">Persentase Termin (%)</label>
+                                <div class="relative">
+                                    <input type="number" id="dpPercent" value="30" min="0.1" max="100" step="any"
+                                        class="w-full pr-7 pl-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 font-mono-code">
+                                    <span class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-slate-400 text-xs font-bold">%</span>
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-[11px] text-slate-500 mb-1">Nominal DP (Rp)</label>
-                                <input type="text" id="dpNominal" placeholder="0" 
-                                    class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500">
+                                <label class="block text-[11px] text-slate-600 mb-1 font-medium">Nominal Termin (Rp)</label>
+                                <input type="text" id="dpNominal" placeholder="0" value="0"
+                                    class="w-full px-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 font-mono-code">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Regulasi Perpajakan & PPN -->
-                    <div class="pt-2 border-t border-slate-100 space-y-3">
-                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Skema Perpajakan (PPN 12%)</h3>
-
-                        <!-- DPP Nilai Lain Switch (Default Checked) -->
-                        <div class="flex items-center justify-between p-3 bg-blue-50/70 border border-blue-200 rounded-xl">
-                            <div>
-                                <label for="useDPPNilaiLain" class="text-xs font-semibold text-slate-800 cursor-pointer block">
-                                    Gunakan DPP Nilai Lain (11/12)
-                                </label>
-                                <p class="text-[11px] text-slate-500">Rumus PPN efektif = 12% x (11/12 x DPP Reguler)</p>
-                            </div>
-                            <input type="checkbox" id="useDPPNilaiLain" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer">
+                    <!-- Tax Regulation Section -->
+                    <div class="pt-3 border-t border-slate-200 space-y-3.5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-600 flex items-center gap-1.5">
+                                <i class="fa-solid fa-scale-balanced text-blue-600"></i> Ketentuan Perpajakan Indonesia
+                            </h3>
+                            <span class="text-[11px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded font-mono-code font-bold">Tarif PPN: 12%</span>
                         </div>
 
-                        <!-- Ongkos Kirim / Biaya Tambahan (Bisa Disesuaikan Teks & Opsi Nonaktif) -->
-                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                        <!-- DPP Nilai Lain Switcher -->
+                        <div class="p-3 bg-blue-50/70 border border-blue-200 rounded-xl space-y-1">
                             <div class="flex items-center justify-between">
-                                <label for="enableShipping" class="text-xs font-semibold text-slate-800 cursor-pointer flex items-center gap-2">
+                                <label for="useDPPNilaiLain" class="text-xs font-bold text-slate-800 cursor-pointer block select-none">
+                                    Gunakan DPP Nilai Lain (Faktor 11/12)
+                                </label>
+                                <input type="checkbox" id="useDPPNilaiLain" checked class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer">
+                            </div>
+                            <p class="text-[11px] text-slate-600 leading-relaxed">
+                                Sesuai penyesuaian tarif PPN 12% dengan dasar pengenaan pajak (DPP) Nilai Lain 11/12 dari harga jual, sehingga beban tarif efektif PPN tetap 11%.
+                            </p>
+                        </div>
+
+                        <!-- e-Faktur CoreTax Code -->
+                        <div>
+                            <label class="block text-xs font-medium text-slate-600 mb-1">
+                                Kode Transaksi Faktur Pajak (CoreTax)
+                            </label>
+                            <select id="efakturCode" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white font-medium">
+                                <option value="04" selected>04 - Penyerahan Menggunakan DPP Nilai Lain</option>
+                                <option value="01">01 - Penyerahan BKP/JKP Reguler kepada Pihak Selain Pemungut</option>
+                                <option value="02">02 - Penyerahan kepada Pemungut Bendaharawan Pemerintah</option>
+                                <option value="03">03 - Penyerahan kepada Pemungut BUMN / Badan Usaha Tertentu</option>
+                                <option value="07">07 - Penyerahan Fasilitas PPN Tidak Dipungut</option>
+                                <option value="08">08 - Penyerahan Fasilitas PPN Dibebaskan</option>
+                            </select>
+                        </div>
+
+                        <!-- Ongkir / Biaya Tambahan -->
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <label for="enableShipping" class="text-xs font-semibold text-slate-800 cursor-pointer flex items-center gap-2 select-none">
                                     <input type="checkbox" id="enableShipping" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer">
-                                    <span>Aktifkan Biaya Tambahan / Ongkir</span>
+                                    <span>Biaya Ekspedisi / Ongkos Kirim Logam</span>
                                 </label>
                                 <span class="text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded" id="shippingStatusBadge">Nonaktif</span>
                             </div>
 
                             <div id="shippingFieldsContainer" class="hidden space-y-2 pt-2 border-t border-slate-200">
-                                <div>
-                                    <label class="block text-[11px] font-medium text-slate-600 mb-1">Nama / Label Biaya (Bisa Diedit)</label>
-                                    <input type="text" id="shippingFeeLabel" value="Ongkos Kirim / Biaya Tambahan" 
-                                        class="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
-                                </div>
-
-                                <div>
-                                    <label class="block text-[11px] font-medium text-slate-600 mb-1">Nominal Biaya (Rp)</label>
-                                    <div class="relative">
-                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-medium text-xs">Rp</span>
-                                        <input type="text" id="shippingFee" placeholder="0" value="0"
-                                            class="w-full pl-9 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-slate-600 mb-1">Keterangan Biaya</label>
+                                        <input type="text" id="shippingFeeLabel" value="Ongkos Kirim & Ekspedisi Logam" 
+                                            class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[11px] font-medium text-slate-600 mb-1">Nominal (Rp)</label>
+                                        <div class="relative">
+                                            <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-slate-400 font-semibold text-xs">Rp</span>
+                                            <input type="text" id="shippingFee" placeholder="0" value="0"
+                                                class="w-full pl-8 pr-2.5 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 font-mono-code">
+                                        </div>
                                     </div>
                                 </div>
-
                                 <div class="flex items-center gap-4 text-xs pt-1">
                                     <label class="cursor-pointer flex items-center gap-1.5 text-slate-700">
                                         <input type="radio" name="shippingTaxRule" value="ppn" checked class="text-blue-600"> 
-                                        <span>Kena PPN <span class="text-slate-400">(Masuk DPP)</span></span>
+                                        <span>Kena PPN <span class="text-slate-400 text-[11px]">(Menambah DPP)</span></span>
                                     </label>
                                     <label class="cursor-pointer flex items-center gap-1.5 text-slate-700">
                                         <input type="radio" name="shippingTaxRule" value="non-ppn" class="text-blue-600"> 
-                                        <span>Non-PPN <span class="text-slate-400">(Reimbursement)</span></span>
+                                        <span>Non-PPN <span class="text-slate-400 text-[11px]">(Reimbursement Murni)</span></span>
                                     </label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Pemotongan PPh -->
-                        <div>
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Pemotongan PPh (Opsional / Ditahan Pembeli)</label>
-                            <select id="pphType" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition bg-white">
+                        <!-- PPh Pemotongan -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-semibold text-slate-700">
+                                Pemotongan Pajak Penghasilan (PPh Dipotong Pembeli)
+                            </label>
+                            <select id="pphType" class="w-full px-3 py-2 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white">
                                 <option value="none">Tanpa Pemotongan PPh</option>
-                                <option value="pph22">PPh Pasal 22 (1,5% dari DPP)</option>
-                                <option value="pph23_jasa">PPh Pasal 23 - Jasa (2,0% dari DPP)</option>
-                                <option value="pph4_2">PPh Pasal 4 ayat 2 - Sewa/Konstruksi (10,0% dari DPP)</option>
-                                <option value="custom">Persentase Custom (%)</option>
+                                <option value="pph22">PPh Pasal 22 - Pengadaan Barang Pemerintah/BUMN (1,5%)</option>
+                                <option value="pph23_jasa">PPh Pasal 23 - Jasa Teknik / Cetak Cor / Fabrikasi (2,0%)</option>
+                                <option value="pph23_sewa">PPh Pasal 23 - Sewa Alat Berat / Mesin (2,0%)</option>
+                                <option value="pph4_2_konstruksi">PPh Final Pasal 4(2) - Jasa Konstruksi (1,75%)</option>
+                                <option value="custom">Persentase Custom Lainnya (%)</option>
                             </select>
+                            
+                            <div id="customPphContainer" class="hidden pt-1">
+                                <div class="flex items-center gap-2">
+                                    <label class="text-xs text-slate-600 whitespace-nowrap">Tarif Custom:</label>
+                                    <div class="relative w-32">
+                                        <input type="number" id="customPphPercent" step="0.05" value="2.0" min="0" max="100"
+                                            class="w-full pr-7 pl-2.5 py-1.5 text-xs font-semibold border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 font-mono-code">
+                                        <span class="absolute inset-y-0 right-0 pr-2 flex items-center text-slate-400 text-xs font-bold">%</span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500">Dihitung dari DPP</span>
+                                </div>
+                            </div>
                         </div>
-                        <div id="customPphContainer" class="hidden">
-                            <label class="block text-xs font-medium text-slate-600 mb-1">Persentase PPh Custom (%)</label>
-                            <input type="number" id="customPphPercent" step="0.1" value="2.0" 
-                                class="w-full px-3 py-1.5 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                        </div>
-                    </div>
 
+                    </div>
                 </div>
 
-                <!-- Template Contoh Cepat -->
-                <div class="bg-blue-50/50 border border-blue-200/80 p-4 rounded-xl">
-                    <h3 class="text-xs font-bold text-blue-900 mb-2 uppercase tracking-wide">
-                        <i class="fa-solid fa-bolt mr-1"></i> Preset Skenario Cepat
-                    </h3>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="loadPreset('transaksi_189jt')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-medium transition">
-                            Rp 189.000.000 (Default DPP Nilai Lain)
+                <!-- Quick Preset Cards -->
+                <div class="bg-blue-50/60 border border-blue-200/80 p-3.5 rounded-xl space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-blue-900 uppercase tracking-wide flex items-center gap-1.5">
+                            <i class="fa-solid fa-bolt-lightning text-amber-500"></i> Preset Skenario Cepat
+                        </span>
+                        <span class="text-[10px] text-blue-600">Klik untuk contoh instan</span>
+                    </div>
+                    <div class="flex flex-wrap gap-1.5">
+                        <!-- PRESET BARU KHUSUS NOTA COR LOGAM -->
+                        <button onclick="loadPreset('nota_cor_logam')" class="px-2.5 py-1 text-xs bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold transition shadow-xs flex items-center gap-1">
+                            <i class="fa-solid fa-weight-hanging text-[10px]"></i>
+                            <span>Nota Cor Logam (Kg & Pcs)</span>
                         </button>
-                        <button onclick="loadPreset('jasa_pph23')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-medium transition">
-                            Jasa Konsultasi + PPh 23
+                        <button onclick="loadPreset('default_189jt')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 hover:border-blue-400 text-blue-700 rounded-lg font-medium transition shadow-xs">
+                            Server Rp 189 Jt (Pcs)
                         </button>
-                        <button onclick="loadPreset('dp_termin')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 rounded-lg font-medium transition">
-                            Uang Muka / DP 30%
+                        <button onclick="loadPreset('jasa_software')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 hover:border-blue-400 text-blue-700 rounded-lg font-medium transition shadow-xs">
+                            Jasa Fabrikasi + PPh 23 (2%)
+                        </button>
+                        <button onclick="loadPreset('dp_termin_30')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 hover:border-blue-400 text-blue-700 rounded-lg font-medium transition shadow-xs">
+                            Uang Muka DP 30%
+                        </button>
+                        <button onclick="loadPreset('inclusive_scenario')" class="px-2.5 py-1 text-xs bg-white border border-blue-200 hover:border-blue-400 text-blue-700 rounded-lg font-medium transition shadow-xs">
+                            Harga Termasuk PPN
                         </button>
                     </div>
                 </div>
 
             </div>
 
-            <!-- RIGHT OUTPUT COLUMN -->
-            <div class="lg:col-span-6 space-y-6">
+            <!-- RIGHT OUTPUT COLUMN (Live Document & Invoice Preview) -->
+            <div class="lg:col-span-6 space-y-4">
 
-                <!-- Summary Card / Output Teks Persis Regulasi -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-card">
+                <!-- Output Card Container -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden print-card print-container">
                     
-                    <!-- Header Output -->
-                    <div class="bg-slate-900 text-white p-4 flex justify-between items-center no-print">
+                    <!-- Action Bar (Hidden during Print) -->
+                    <div class="bg-slate-900 text-white px-5 py-3.5 flex flex-wrap justify-between items-center gap-2 no-print border-b border-slate-800">
                         <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-file-invoice text-emerald-400 text-lg"></i>
-                            <h2 class="font-semibold text-sm sm:text-base">Hasil Rincian Penagihan</h2>
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <h2 class="font-bold text-sm text-slate-100 tracking-wide">Hasil Dokumen & Faktur</h2>
                         </div>
-                        <div class="flex gap-2">
-                            <button onclick="copyToClipboard()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
-                                <i class="fa-regular fa-copy"></i>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="copyToClipboardFormatted()" title="Salin Ringkasan Teks Lengkap" 
+                                class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium rounded-lg text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-xs">
+                                <i class="fa-regular fa-copy text-blue-400"></i>
                                 <span>Salin Teks</span>
                             </button>
-                            <button onclick="window.print()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs font-medium rounded-lg text-white transition flex items-center gap-1.5 shadow-sm">
+                            <button onclick="copyWhatsAppFormat()" title="Format Kirim WhatsApp" 
+                                class="px-2.5 py-1.5 bg-emerald-700/80 hover:bg-emerald-600 text-xs font-medium rounded-lg text-white transition flex items-center gap-1.5 shadow-xs">
+                                <i class="fa-brands fa-whatsapp text-emerald-300"></i>
+                                <span>Format WA</span>
+                            </button>
+                            <button onclick="cetakFaktur()" title="Cetak atau Simpan PDF" 
+                                class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs font-medium rounded-lg text-white transition flex items-center gap-1.5 shadow-xs cursor-pointer">
                                 <i class="fa-solid fa-print"></i>
                                 <span>Cetak</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Layout Faktur / Invoicing Card -->
-                    <div class="p-6 font-mono text-sm leading-relaxed text-slate-800 bg-white" id="invoiceCard">
+                    <!-- Official Invoice Document Body -->
+                    <div class="p-6 sm:p-7 bg-white text-slate-900 leading-normal" id="printableInvoiceArea">
                         
-                        <div class="border-b-2 border-slate-800 pb-3 mb-4">
-                            <div class="text-center font-bold text-base sm:text-lg tracking-wider text-slate-900">
-                                RINCIAN PENAGIHAN & PERPAJAKAN
-                            </div>
-                            <div class="text-center text-xs text-slate-500 font-sans mt-1" id="invoiceMetaText">
-                                Invoice: <span id="outInvoiceNum">-</span> | Kepada: <span id="outClientName">-</span>
+                        <!-- Header Surat / Letterhead Invoice -->
+                        <div class="border-b-2 border-slate-800 pb-5 mb-5">
+                            <div class="flex justify-between items-start gap-4">
+                                <div>
+                                    <h3 class="text-lg sm:text-xl font-extrabold text-slate-900 uppercase tracking-tight" id="docSellerName">
+                                        CV MANDIRI LOGAM JAYA
+                                    </h3>
+                                    <p class="text-xs text-slate-500 mt-0.5">NPWP: <span id="docSellerTaxId" class="font-mono-code">01.234.567.8-012.000</span></p>
+                                    <p class="text-xs text-slate-500">Pengecoran Logam, Fabrikasi & Pengadaan BKP</p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="inline-block px-3 py-1 bg-slate-900 text-white text-xs font-black tracking-wider uppercase rounded">
+                                        FAKTUR PENAGIHAN
+                                    </span>
+                                    <p class="text-xs font-mono-code font-bold text-slate-800 mt-1.5" id="docInvoiceNum">-</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">Kode Transaksi: <span id="docTaxCodeBadge" class="font-mono-code font-bold text-blue-700">04</span></p>
+                                </div>
                             </div>
 
-                            <!-- Ringkasan Skema Transaksi / DP Info -->
-                            <div class="mt-3 p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-sans space-y-1 text-slate-700">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-slate-500">Total Nilai Transaksi Utama:</span>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-bold text-slate-900" id="outTotalProjectVal">Rp 0</span>
-                                        <button onclick="copySingleValue('outTotalProjectVal')" title="Salin nominal" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
-                                            <i class="fa-regular fa-copy"></i>
-                                        </button>
-                                    </div>
+                            <!-- Meta details row -->
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4 pt-3 border-t border-slate-100 text-xs">
+                                <div>
+                                    <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Ditujukan Kepada:</span>
+                                    <strong class="text-slate-800 block mt-0.5 text-sm" id="docClientName">-</strong>
+                                    <span class="text-slate-500 font-mono-code text-[11px]" id="docClientTaxId"></span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="text-slate-500">Skema Penagihan Ini:</span>
-                                    <span class="font-semibold text-blue-700" id="outPaymentSchemeInfo">Pelunasan / Full (100%)</span>
+                                <div>
+                                    <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Tanggal Penerbitan:</span>
+                                    <span class="text-slate-700 block mt-0.5" id="docInvoiceDate">-</span>
+                                    <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider mt-1">Jatuh Tempo:</span>
+                                    <span class="text-rose-700 font-semibold block" id="docDueDate">-</span>
+                                </div>
+                                <div class="col-span-2 sm:col-span-1">
+                                    <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">Skema Pembayaran:</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded font-semibold text-[11px] bg-blue-50 text-blue-800 border border-blue-200" id="docPaymentScheme">
+                                        Pelunasan Penuh (100%)
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Tabel Rincian Daftar Barang (Jika Mode Daftar Barang Digunakan) -->
-                        <div id="invoiceItemsTableContainer" class="mb-4 hidden font-sans">
-                            <div class="text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
-                                <span>DAFTAR BARANG / JASA:</span>
-                                <span class="text-[10px] text-slate-400">Harga Satuan (Rp)</span>
-                            </div>
-                            <div class="border border-slate-200 rounded-lg overflow-hidden">
-                                <table class="w-full text-xs divide-y divide-slate-200">
-                                    <thead class="bg-slate-100 text-slate-600 font-semibold">
+                        <!-- Table of Goods / Services (Supports Pcs & Kg display) -->
+                        <div id="docItemsTableSection" class="mb-5">
+                            <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                                <table class="w-full text-left text-xs divide-y divide-slate-200">
+                                    <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px] tracking-wider">
                                         <tr>
-                                            <th class="py-1.5 px-2 text-left w-7">No</th>
-                                            <th class="py-1.5 px-2 text-left">Nama Barang / Jasa</th>
-                                            <th class="py-1.5 px-2 text-center w-12">Qty</th>
-                                            <th class="py-1.5 px-2 text-right">Harga</th>
-                                            <th class="py-1.5 px-2 text-right">Total</th>
+                                            <th class="py-2.5 px-3 w-8 text-center">No</th>
+                                            <th class="py-2.5 px-3">Deskripsi Barang / Jasa</th>
+                                            <th class="py-2.5 px-3 text-center w-24">Banyaknya</th>
+                                            <th class="py-2.5 px-3 text-right w-32">Harga Satuan (Rp)</th>
+                                            <th class="py-2.5 px-3 text-right w-36">Jumlah (Rp)</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="invoiceItemsTableBody" class="divide-y divide-slate-100 bg-white">
-                                        <!-- Rendered dynamically -->
+                                    <tbody id="docItemsTableBody" class="divide-y divide-slate-100 bg-white">
+                                        <!-- Rows rendered dynamically by JS -->
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <!-- Rows Calculation -->
-                        <div class="space-y-1.5 font-mono">
-                            <div class="flex justify-between items-center">
-                                <span id="labelSubtotal">* Sub Total Penagihan Ini:</span>
+                        <!-- Breakdown of Calculations (Faktur Math) -->
+                        <div class="space-y-2 text-xs sm:text-sm font-mono-code">
+                            
+                            <!-- Sub Total Nilai Transaksi Dasar -->
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-slate-600 font-sans font-medium" id="lblDocSubtotal">Sub Total Penagihan:</span>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-semibold" id="outSubtotal">Rp 0</span>
-                                    <button onclick="copySingleValue('outSubtotal')" title="Salin nominal" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                                    <span class="font-bold text-slate-900" id="docSubtotal">Rp 0</span>
+                                    <button onclick="copySingleValue('docSubtotal')" title="Salin nilai" class="no-print text-slate-400 hover:text-blue-600 p-0.5 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="flex justify-between items-center hidden" id="rowDiscount">
-                                <span>* Diskon:</span>
+                            <!-- Potongan Diskon (if applicable) -->
+                            <div class="flex justify-between items-center py-1 hidden text-rose-600" id="docRowDiscount">
+                                <span class="font-sans font-medium" id="lblDocDiscount">Potongan Harga (Diskon):</span>
                                 <div class="flex items-center gap-1.5">
-                                    <span id="outDiscount">Rp 0</span>
-                                    <button onclick="copySingleValue('outDiscount')" title="Salin nominal" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                                    <span class="font-bold" id="docDiscount">- Rp 0</span>
+                                    <button onclick="copySingleValue('docDiscount')" title="Salin nilai" class="no-print text-rose-400 hover:text-rose-700 p-0.5 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="border-t border-dashed border-slate-300 my-2"></div>
-
-                            <div class="flex justify-between items-center font-semibold text-blue-900 bg-blue-50/50 px-1 py-0.5 rounded">
-                                <span>* DPP Reguler:</span>
+                            <!-- DPP Reguler Line -->
+                            <div class="flex justify-between items-center py-1.5 px-2 bg-slate-50 border border-slate-200/80 rounded-md">
+                                <span class="text-slate-700 font-sans font-semibold">Dasar Pengenaan Pajak (DPP Reguler):</span>
                                 <div class="flex items-center gap-1.5">
-                                    <span id="outDPPReguler">Rp 0</span>
-                                    <button onclick="copySingleValue('outDPPReguler')" title="Salin nominal" class="no-print text-blue-400 hover:text-blue-700 p-1 rounded transition text-xs">
+                                    <span class="font-bold text-slate-900" id="docDPPReguler">Rp 0</span>
+                                    <button onclick="copySingleValue('docDPPReguler')" title="Salin nilai" class="no-print text-slate-400 hover:text-blue-600 p-0.5 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- DPP Nilai Lain Row -->
-                            <div id="rowDPPNilaiLain" class="flex justify-between items-center text-blue-800 bg-blue-50 px-1 py-0.5 rounded">
-                                <span>* DPP Nilai Lain (11/12):</span>
+                            <!-- DPP Nilai Lain (11/12) Line -->
+                            <div class="flex justify-between items-center py-1.5 px-2 bg-blue-50/70 border border-blue-200/80 rounded-md text-blue-900" id="docRowDPPNilaiLain">
+                                <div>
+                                    <span class="font-sans font-semibold">DPP Nilai Lain (11/12 dari DPP):</span>
+                                    <span class="text-[10px] text-blue-600 font-sans block">Basis perhitungan tarif PPN 12%</span>
+                                </div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-semibold" id="outDPPNilaiLain">Rp 0</span>
-                                    <button onclick="copySingleValue('outDPPNilaiLain')" title="Salin nominal" class="no-print text-blue-400 hover:text-blue-700 p-1 rounded transition text-xs">
+                                    <span class="font-bold" id="docDPPNilaiLain">Rp 0</span>
+                                    <button onclick="copySingleValue('docDPPNilaiLain')" title="Salin nilai" class="no-print text-blue-400 hover:text-blue-700 p-0.5 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="flex justify-between items-center">
-                                <span id="labelPPN">* PPN 12%:</span>
+                            <!-- PPN Terutang (12%) Line -->
+                            <div class="flex justify-between items-center py-1">
+                                <span class="text-slate-700 font-sans font-semibold" id="lblDocPPN">PPN Terutang (12%):</span>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="font-semibold" id="outPPN">Rp 0</span>
-                                    <button onclick="copySingleValue('outPPN')" title="Salin nominal" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                                    <span class="font-bold text-slate-900" id="docPPN">Rp 0</span>
+                                    <button onclick="copySingleValue('docPPN')" title="Salin nilai" class="no-print text-slate-400 hover:text-blue-600 p-0.5 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Dynamic Extra Fee / Ongkir Row -->
-                            <div id="rowShipping" class="flex justify-between items-center hidden">
-                                <span id="outShippingLabel">* Ongkos Kirim / Biaya Lain:</span>
+                            <!-- Biaya Ongkir / Ekspedisi Logam -->
+                            <div class="flex justify-between items-center py-1 hidden" id="docRowShipping">
+                                <span class="text-slate-600 font-sans font-medium" id="lblDocShipping">Ongkos Kirim & Ekspedisi:</span>
                                 <div class="flex items-center gap-1.5">
-                                    <span id="outShipping">Rp 0</span>
-                                    <button onclick="copySingleValue('outShipping')" title="Salin nominal" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                                    <span class="font-bold text-slate-800" id="docShipping">Rp 0</span>
+                                    <button onclick="copySingleValue('docShipping')" title="Salin nilai" class="no-print text-slate-400 hover:text-blue-600 p-0.5 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <div class="border-t-2 border-slate-800 my-3"></div>
+                            <div class="border-t-2 border-slate-900 my-2"></div>
 
-                            <!-- GRAND TOTAL -->
-                            <div class="flex justify-between items-center bg-slate-100 p-2.5 rounded-lg text-slate-900 font-bold text-base">
-                                <span>* GRAND TOTAL TAGIHAN (INVOICE):</span>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-blue-700" id="outGrandTotal">Rp 0</span>
-                                    <button onclick="copySingleValue('outGrandTotal')" title="Salin nominal Grand Total" class="no-print text-slate-400 hover:text-blue-600 p-1 rounded transition text-xs">
+                            <!-- GRAND TOTAL TAGIHAN INVOICE -->
+                            <div class="flex justify-between items-center bg-slate-900 text-white p-3 rounded-xl shadow-xs">
+                                <div>
+                                    <span class="font-sans font-black text-xs sm:text-sm tracking-wider uppercase block">
+                                        GRAND TOTAL TAGIHAN
+                                    </span>
+                                    <span class="text-[10px] text-slate-300 font-sans">Jumlah yang ditagihkan pada faktur ini</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-base sm:text-lg text-emerald-300 tracking-tight" id="docGrandTotal">Rp 0</span>
+                                    <button onclick="copySingleValue('docGrandTotal')" title="Salin Grand Total" class="no-print text-slate-400 hover:text-white p-1 rounded text-xs transition">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- KOTAK TERBILANG GRAND TOTAL -->
-                            <div class="mt-2 p-3 bg-blue-50/80 border border-blue-200 rounded-xl font-sans text-xs">
+                            <!-- Box Terbilang Grand Total -->
+                            <div class="p-3 bg-blue-50/80 border border-blue-200 rounded-xl font-sans text-xs">
                                 <div class="flex items-start justify-between gap-2">
                                     <div class="space-y-0.5">
-                                        <span class="text-[10px] uppercase font-bold text-blue-900 tracking-wider flex items-center gap-1">
+                                        <span class="text-[10px] uppercase font-bold text-blue-900 tracking-wider flex items-center gap-1.5">
                                             <i class="fa-solid fa-spell-check text-blue-600"></i> Terbilang:
                                         </span>
-                                        <p class="font-semibold text-slate-800 italic leading-snug" id="outTerbilang">
+                                        <p class="font-semibold text-slate-800 italic leading-snug" id="docTerbilang">
                                             # Nol Rupiah #
                                         </p>
                                     </div>
-                                    <button onclick="copySingleValue('outTerbilang')" title="Salin Kalimat Terbilang" class="no-print text-blue-500 hover:text-blue-800 p-1 rounded transition text-xs shrink-0">
+                                    <button onclick="copySingleValue('docTerbilang')" title="Salin Terbilang" class="no-print text-blue-500 hover:text-blue-800 p-1 rounded transition text-xs shrink-0">
                                         <i class="fa-regular fa-copy"></i>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- ESTIMASI PEMBAYARAN PPh -->
-                            <div id="pphSection" class="pt-4 mt-4 border-t border-slate-200">
-                                <div class="font-bold text-xs font-sans text-slate-500 uppercase tracking-wider mb-2">
-                                    ESTIMASI PEMBAYARAN (JIKA ADA POTONGAN PPh):
+                            <!-- Estimasi Pemotongan PPh & Pembayaran Bersih (Net) -->
+                            <div id="docPphSection" class="pt-3 mt-3 border-t border-slate-200">
+                                <div class="font-sans text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                                    Estimasi Arus Kas Pembayaran (Setelah Pemotongan PPh):
                                 </div>
-                                <div id="rowPPhDeduction" class="flex justify-between items-center text-rose-700">
-                                    <span id="labelPPhType">* Potongan PPh:</span>
+
+                                <div class="flex justify-between items-center py-1 text-rose-700 hidden" id="docRowPph">
+                                    <span class="font-sans font-medium" id="lblDocPph">Potongan PPh:</span>
                                     <div class="flex items-center gap-1.5">
-                                        <span class="font-semibold" id="outPPhDeduction">(Rp 0)</span>
-                                        <button onclick="copySingleValue('outPPhDeduction')" title="Salin nominal" class="no-print text-rose-400 hover:text-rose-700 p-1 rounded transition text-xs">
+                                        <span class="font-bold" id="docPphDeduction">(Rp 0)</span>
+                                        <button onclick="copySingleValue('docPphDeduction')" title="Salin PPh" class="no-print text-rose-400 hover:text-rose-700 p-0.5 rounded text-xs transition">
                                             <i class="fa-regular fa-copy"></i>
                                         </button>
                                     </div>
                                 </div>
 
-                                <div class="flex justify-between items-center bg-emerald-50 p-2.5 rounded-lg text-emerald-950 font-bold text-base mt-2 border border-emerald-200">
-                                    <span>* TOTAL DITERIMA / DIBAYARKAN (NET):</span>
+                                <div class="flex justify-between items-center bg-emerald-50 p-2.5 rounded-lg border border-emerald-300 text-emerald-950 font-sans mt-1">
+                                    <div>
+                                        <span class="font-bold text-xs uppercase block">Total Bersih Diterima (Net Payment):</span>
+                                        <span class="text-[10px] text-emerald-700 block">Grand Total Invoice dikurangi Potongan PPh</span>
+                                    </div>
                                     <div class="flex items-center gap-1.5">
-                                        <span class="text-emerald-700" id="outNetPayment">Rp 0</span>
-                                        <button onclick="copySingleValue('outNetPayment')" title="Salin nominal" class="no-print text-emerald-600 hover:text-emerald-800 p-1 rounded transition text-xs">
+                                        <span class="font-mono-code font-bold text-base text-emerald-700" id="docNetPayment">Rp 0</span>
+                                        <button onclick="copySingleValue('docNetPayment')" title="Salin Net Payment" class="no-print text-emerald-600 hover:text-emerald-900 p-0.5 rounded text-xs transition">
                                             <i class="fa-regular fa-copy"></i>
                                         </button>
                                     </div>
                                 </div>
 
-                                <!-- Terbilang Net Payment -->
-                                <div id="containerTerbilangNet" class="mt-1.5 px-2.5 py-1.5 bg-emerald-50/60 rounded-lg border border-emerald-200/60 font-sans text-[11px] text-emerald-900 hidden">
-                                    <div class="flex items-center justify-between gap-1">
-                                        <span>Terbilang (Net): <strong class="italic" id="outTerbilangNet"># Nol Rupiah #</strong></span>
-                                        <button onclick="copySingleValue('outTerbilangNet')" title="Salin Terbilang Net" class="no-print text-emerald-700 hover:text-emerald-900 p-0.5 rounded transition text-[11px]">
+                                <div id="docTerbilangNetContainer" class="mt-1.5 px-3 py-1.5 bg-emerald-50/50 rounded-lg border border-emerald-200/50 font-sans text-[11px] text-emerald-900 hidden">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span>Terbilang Bersih: <strong class="italic font-semibold" id="docTerbilangNet"># Nol Rupiah #</strong></span>
+                                        <button onclick="copySingleValue('docTerbilangNet')" title="Salin Terbilang Net" class="no-print text-emerald-700 hover:text-emerald-950 p-0.5 rounded text-xs">
                                             <i class="fa-regular fa-copy"></i>
                                         </button>
                                     </div>
                                 </div>
                             </div>
+
                         </div>
 
-                        <!-- Footer Catatan Regulasi -->
-                        <div class="mt-6 pt-4 border-t border-slate-200 text-[11px] font-sans text-slate-500 space-y-1">
-                            <p class="font-semibold text-slate-700">Catatan Regulasi Perpajakan:</p>
-                            <ul class="list-disc list-inside space-y-0.5">
-                                <li>PPN dihitung 12% sesuai PMK perpajakan Indonesia.</li>
-                                <li id="noteDPP">DPP Nilai Lain dihitung 11/12 dari DPP Reguler (PPN Efektif 11%).</li>
-                                <li id="notePPh">Potongan PPh adalah kewajiban pemotongan pajak oleh pembeli/pemungut.</li>
-                            </ul>
+                        <!-- Payment Instructions & Stamp Signature Section -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-4 border-t border-slate-200 text-xs font-sans">
+                            <div class="space-y-1">
+                                <span class="font-bold text-slate-700 block uppercase text-[10px] tracking-wider">Instruksi Pembayaran:</span>
+                                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 space-y-0.5">
+                                    <p>Transfer Bank: <strong id="docBankName">Bank BCA</strong></p>
+                                    <p>Nomor Rekening: <strong class="font-mono-code" id="docBankAccount">8830-192-881</strong></p>
+                                    <p>Atas Nama: <strong id="docBankHolder">CV Mandiri Logam Jaya</strong></p>
+                                    <p class="text-[10px] text-slate-400 mt-1">Harap cantumkan nomor invoice/nota pada berita transfer.</p>
+                                </div>
+                            </div>
+                            <div class="text-center sm:text-right flex flex-col justify-between items-center sm:items-end">
+                                <div>
+                                    <p class="text-slate-500 text-[11px]">Hormat Kami,</p>
+                                    <p class="font-bold text-slate-800" id="docSignatureCompany">CV MANDIRI LOGAM JAYA</p>
+                                </div>
+                                <div class="h-16 w-36 border-b border-dashed border-slate-400 flex items-center justify-center text-[10px] text-slate-300 italic">
+                                    (Tanda Tangan & Cap)
+                                </div>
+                                <p class="text-[11px] text-slate-600 font-medium mt-1">Bagian Keuangan / Administrasi</p>
+                            </div>
+                        </div>
+
+                        <!-- Regulation compliance footer notes -->
+                        <div class="mt-5 pt-3 border-t border-slate-100 text-[10px] text-slate-400 font-sans space-y-0.5">
+                            <p>• Ketentuan Pajak: PPN dihitung berdasarkan tarif 12% sesuai regulasi perpajakan yang berlaku.</p>
+                            <p id="docRegulationNoteDPP">• DPP Nilai Lain dihitung sebesar 11/12 x DPP Reguler untuk menghasilkan tarif efektif 11%.</p>
+                            <p>• Satuan: Basis hitungan <strong>Pcs</strong> untuk item unit biasa & <strong>Kg</strong> untuk timbangan berat cor logam.</p>
                         </div>
 
                     </div>
-                </div>
-
-                <!-- Toast Notification Box -->
-                <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-700 text-sm flex items-center gap-3 transition-opacity duration-300 opacity-0 pointer-events-none no-print z-50">
-                    <i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
-                    <span id="toastMsg">Teks rincian berhasil disalin ke clipboard!</span>
                 </div>
 
             </div>
@@ -502,8 +739,16 @@
         </div>
     </main>
 
+    <!-- Toast Notification Popup -->
+    <div id="toastNotification" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-slate-700 text-xs sm:text-sm flex items-center gap-3 transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none no-print z-50">
+        <div class="p-1 rounded-full bg-emerald-500/20 text-emerald-400">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+        </div>
+        <span id="toastMessage">Teks berhasil disalin ke clipboard!</span>
+    </div>
+
     <script>
-        // Fungsi Terbilang Bahasa Indonesia
+        // Fungsi Konversi Angka ke Terbilang Bahasa Indonesia
         function angkaKeTerbilang(angka) {
             angka = Math.floor(Math.abs(Number(angka) || 0));
             if (angka === 0) return "Nol Rupiah";
@@ -539,20 +784,31 @@
             return teks + " Rupiah";
         }
 
-        // Formatting Rupiah
+        // Format angka ke format Rupiah
         function formatRupiah(number) {
             const rounded = Math.round(Number(number) || 0);
             return 'Rp ' + rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Format angka saja dengan titik pemisah ribuan
-        function formatAngkaTitik(number) {
+        // Format angka dengan titik pemisah ribuan saja
+        function formatRibuan(number) {
             const rounded = Math.round(Number(number) || 0);
             return rounded.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
         }
 
-        // Robust Excel & Text Number Parser (mendukung format Rp, koma, titik)
-        function parseNumber(str) {
+        // Format angka desimal Indonesia (cth: 3.2 -> 3,2 atau 21.8 -> 21,8)
+        function formatDesimalId(num) {
+            if (num === null || num === undefined) return "0";
+            let n = Number(num);
+            if (isNaN(n) || n === 0) return "0";
+            if (Number.isInteger(n)) return n.toString();
+            // Format maksimal 3 desimal tanpa trailing zero
+            let str = n.toFixed(3).replace(/\.?0+$/, '');
+            return str.replace('.', ',');
+        }
+
+        // Parser angka pintar untuk input teks manual / copas Excel
+        function parseAngka(str) {
             if (!str) return 0;
             let s = str.toString().trim();
             s = s.replace(/[^0-9.,-]/g, '');
@@ -589,15 +845,14 @@
             return isNaN(val) ? 0 : val;
         }
 
-        // Apply live currency formatting for manual typing & paste
-        function applyCurrencyFormatting(el) {
-            if (!el) return;
+        function bindCurrencyInput(inputEl) {
+            if (!inputEl) return;
 
-            el.addEventListener('input', function() {
+            inputEl.addEventListener('input', function() {
                 if (this.id === 'discountValue') {
                     const discountType = document.querySelector('input[name="discountType"]:checked')?.value;
                     if (discountType === 'percent') {
-                        calculateTax();
+                        hitungSemua();
                         return;
                     }
                 }
@@ -606,7 +861,7 @@
                 let digits = raw.replace(/[^0-9]/g, '');
                 if (!digits) {
                     this.value = '';
-                    calculateTax();
+                    hitungSemua();
                     return;
                 }
 
@@ -617,46 +872,69 @@
                 let selStart = this.selectionStart;
                 this.value = formatted;
                 let newLen = formatted.length;
-
                 let newPos = selStart + (newLen - oldLen);
                 if (newPos < 0) newPos = 0;
-                try {
-                    this.setSelectionRange(newPos, newPos);
-                } catch (err) {}
+                try { this.setSelectionRange(newPos, newPos); } catch (e) {}
 
-                calculateTax();
+                hitungSemua();
             });
 
-            el.addEventListener('paste', function(e) {
+            inputEl.addEventListener('paste', function(e) {
                 e.preventDefault();
-                let pastedText = (e.clipboardData || window.clipboardData).getData('text');
-                
+                let pasteData = (e.clipboardData || window.clipboardData).getData('text');
+
                 if (this.id === 'discountValue') {
                     const discountType = document.querySelector('input[name="discountType"]:checked')?.value;
                     if (discountType === 'percent') {
-                        let num = parseFloat(pastedText.replace(',', '.'));
+                        let num = parseFloat(pasteData.replace(',', '.'));
                         this.value = isNaN(num) ? '0' : num.toString();
-                        calculateTax();
+                        hitungSemua();
                         return;
                     }
                 }
 
-                let parsed = parseNumber(pastedText);
-                if (parsed > 0) {
-                    this.value = Math.round(parsed).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-                } else {
-                    this.value = '';
-                }
-                calculateTax();
+                let parsed = parseAngka(pasteData);
+                this.value = parsed > 0 ? formatRibuan(parsed) : '0';
+                hitungSemua();
             });
         }
 
-        // State Transaksi & Daftar Barang
-        let inputMode = 'items'; // 'items' or 'direct'
-        let paymentScheme = 'full';
+        // State Variabel Aplikasi
+        let inputMode = 'items'; // 'items' atau 'direct'
+        let taxMode = 'excluded'; // 'excluded' (Belum PPN) atau 'included' (Termasuk PPN)
+        let paymentScheme = 'full'; // 'full' atau 'dp'
+
+        // KETENTUAN DEFAULT (RESET AWAL):
+        // SEMUA nilai input bernilai 0 atau kosong, tidak ada angka bawaan/dummy.
+        // Default satuan/basis hitungan adalah "pcs" (Pcs).
         let items = [
-            { id: 1, name: "Perangkat Komputer Server Utama", qty: 1, price: 189000000 }
+            { 
+                id: 1, 
+                name: "", 
+                unitBasis: "pcs", // "pcs" (default) atau "kg"
+                pcsNote: "",      // catatan pcs opsional (cth: "2 pcs")
+                qty: 0,           // default 0
+                price: 0          // default 0
+            }
         ];
+
+        function setTaxMode(mode) {
+            taxMode = mode;
+            const btnExcluded = document.getElementById('btnTaxExcluded');
+            const btnIncluded = document.getElementById('btnTaxIncluded');
+            const desc = document.getElementById('taxModeDescription');
+
+            if (mode === 'included') {
+                btnIncluded.className = "px-3 py-1 rounded-md font-semibold text-xs transition bg-blue-600 text-white shadow-sm";
+                btnExcluded.className = "px-3 py-1 rounded-md font-semibold text-xs transition text-slate-600 hover:text-slate-900";
+                desc.innerText = "Harga barang sudah termasuk PPN (sistem otomatis melakukan back-calculation untuk mencari DPP murni).";
+            } else {
+                btnExcluded.className = "px-3 py-1 rounded-md font-semibold text-xs transition bg-blue-600 text-white shadow-sm";
+                btnIncluded.className = "px-3 py-1 rounded-md font-semibold text-xs transition text-slate-600 hover:text-slate-900";
+                desc.innerText = "Harga barang belum termasuk pajak (PPN dihitung sebagai penambah subtotal).";
+            }
+            hitungSemua();
+        }
 
         function setInputMode(mode) {
             inputMode = mode;
@@ -666,66 +944,121 @@
             const directCont = document.getElementById('directSubtotalContainer');
 
             if (mode === 'items') {
-                tabItems.className = "px-2.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm";
-                tabDirect.className = "px-2.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900";
+                tabItems.className = "px-3 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm";
+                tabDirect.className = "px-3 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900";
                 itemsCont.classList.remove('hidden');
                 directCont.classList.add('hidden');
             } else {
-                tabDirect.className = "px-2.5 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm";
-                tabItems.className = "px-2.5 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900";
+                tabDirect.className = "px-3 py-1 rounded-md font-medium text-xs transition bg-white text-blue-700 shadow-sm";
+                tabItems.className = "px-3 py-1 rounded-md font-medium text-xs transition text-slate-600 hover:text-slate-900";
                 directCont.classList.remove('hidden');
                 itemsCont.classList.add('hidden');
             }
-            calculateTax();
+            hitungSemua();
         }
 
         function renderItems() {
             const listEl = document.getElementById('itemsList');
-            const countEl = document.getElementById('itemsCountBadge');
+            const badge = document.getElementById('itemsCountBadge');
             if (!listEl) return;
 
             listEl.innerHTML = '';
-            if (countEl) countEl.innerText = `${items.length} Barang / Jasa`;
+            if (badge) badge.innerText = `${items.length} Item`;
 
             items.forEach((item, index) => {
-                const totalItem = (item.qty || 0) * (item.price || 0);
-                const itemDiv = document.createElement('div');
-                itemDiv.className = "p-2.5 bg-white border border-slate-200 rounded-lg shadow-sm space-y-2";
-                itemDiv.innerHTML = `
-                    <div class="flex items-center justify-between gap-2">
-                        <span class="text-[11px] font-bold text-slate-400">#${index + 1}</span>
-                        <input type="text" placeholder="Nama barang / jasa" value="${item.name || ''}" 
-                            oninput="updateItemField(${item.id}, 'name', this.value)"
-                            class="flex-grow px-2.5 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 font-medium">
+                const isKg = item.unitBasis === 'kg';
+                const totalItem = (Number(item.qty) || 0) * (Number(item.price) || 0);
+
+                const rowDiv = document.createElement('div');
+                rowDiv.className = `p-3.5 bg-white border ${isKg ? 'border-amber-300 ring-1 ring-amber-100' : 'border-slate-200'} rounded-xl shadow-xs space-y-2.5 transition`;
+                rowDiv.innerHTML = `
+                    <!-- Row 1: Number, Item Name, and Optional Pcs Note -->
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <span class="text-[11px] font-bold text-slate-400 font-mono-code w-6 text-center">#${index + 1}</span>
+                            <span class="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${isKg ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">
+                                ${isKg ? 'Timbangan Kg' : 'Pcs'}
+                            </span>
+                        </div>
+                        
+                        <!-- Nama Barang Input -->
+                        <div class="flex-grow">
+                            <input type="text" placeholder="Nama barang atau jasa..." value="${item.name || ''}" 
+                                oninput="updateItemField(${item.id}, 'name', this.value)"
+                                class="w-full px-2.5 py-1.5 text-xs sm:text-sm border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 font-medium">
+                        </div>
+
+                        <!-- Catatan Pcs Opsional -->
+                        <div class="w-full sm:w-44 shrink-0">
+                            <div class="relative">
+                                <input type="text" placeholder="Catatan Pcs (cth: 2 pcs)" value="${item.pcsNote || ''}" 
+                                    oninput="updateItemField(${item.id}, 'pcsNote', this.value)"
+                                    title="Catatan jumlah unit fisik jika menggunakan basis timbangan berat Kg"
+                                    class="w-full px-2.5 py-1.5 text-xs border border-dashed border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 bg-slate-50/70 text-slate-700 font-mono-code">
+                            </div>
+                        </div>
+
+                        <!-- Delete button -->
                         ${items.length > 1 ? `
-                            <button type="button" onclick="removeItem(${item.id})" class="text-slate-400 hover:text-rose-600 p-1 transition text-xs" title="Hapus Barang">
-                                <i class="fa-regular fa-trash-can"></i>
+                            <button type="button" onclick="removeItem(${item.id})" class="text-slate-400 hover:text-rose-600 p-1.5 transition text-xs shrink-0 self-end sm:self-center" title="Hapus Baris">
+                                <i class="fa-regular fa-trash-can text-sm"></i>
                             </button>
                         ` : ''}
                     </div>
-                    <div class="grid grid-cols-12 gap-2 items-center text-xs">
-                        <div class="col-span-3">
-                            <label class="block text-[10px] text-slate-400 mb-0.5">Qty</label>
-                            <input type="number" min="1" value="${item.qty}" 
+
+                    <!-- Row 2: Basis Satuan, Qty Hitung, Harga Satuan, Subtotal Baris -->
+                    <div class="grid grid-cols-12 gap-2.5 items-end text-xs pt-1 border-t border-slate-100">
+                        <!-- Basis Satuan Dropdown -->
+                        <div class="col-span-12 sm:col-span-4">
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">
+                                Basis Satuan Hitung <span class="text-blue-600 font-bold">*</span>
+                            </label>
+                            <select onchange="updateItemBasis(${item.id}, this.value)" 
+                                class="w-full px-2 py-1.5 text-xs border ${isKg ? 'border-amber-400 bg-amber-50/50 text-amber-950 font-semibold' : 'border-slate-300 bg-white text-slate-800'} rounded-lg focus:ring-1 focus:ring-blue-500">
+                                <option value="pcs" ${!isKg ? 'selected' : ''}>Pcs (Per Unit/Jasa) [Default]</option>
+                                <option value="kg" ${isKg ? 'selected' : ''}>Kg (Timbangan Berat Cor Logam)</option>
+                            </select>
+                        </div>
+
+                        <!-- Qty / Banyaknya Input -->
+                        <div class="col-span-4 sm:col-span-2">
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">
+                                Qty (${isKg ? 'Kg Desimal' : 'Pcs'})
+                            </label>
+                            <input type="number" 
+                                min="0" 
+                                step="${isKg ? '0.01' : '1'}" 
+                                value="${item.qty === 0 ? '' : item.qty}" 
+                                placeholder="0"
                                 oninput="updateItemField(${item.id}, 'qty', this.value)"
-                                class="w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 text-center font-semibold">
+                                class="w-full px-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 text-center font-bold font-mono-code ${isKg ? 'text-amber-800' : 'text-slate-800'}">
                         </div>
-                        <div class="col-span-5">
-                            <label class="block text-[10px] text-slate-400 mb-0.5">Harga Satuan (Rp)</label>
-                            <input type="text" value="${formatAngkaTitik(item.price)}" 
-                                data-item-id="${item.id}"
-                                class="item-price-input w-full px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-blue-500 font-medium">
+
+                        <!-- Harga Satuan Input -->
+                        <div class="col-span-8 sm:col-span-3">
+                            <label class="block text-[10px] font-semibold text-slate-500 mb-1">
+                                Harga / ${isKg ? 'Kg (Rp)' : 'Pcs (Rp)'}
+                            </label>
+                            <div class="relative">
+                                <input type="text" 
+                                    value="${item.price === 0 ? '' : formatRibuan(item.price)}" 
+                                    placeholder="0"
+                                    data-item-id="${item.id}"
+                                    class="item-price-input w-full px-2 py-1.5 text-xs border border-slate-300 rounded-lg focus:ring-1 focus:ring-blue-500 font-mono-code font-semibold">
+                            </div>
                         </div>
-                        <div class="col-span-4 text-right">
-                            <label class="block text-[10px] text-slate-400 mb-0.5">Total</label>
-                            <span class="font-bold text-blue-900 text-xs block py-1">${formatRupiah(totalItem)}</span>
+
+                        <!-- Subtotal Baris -->
+                        <div class="col-span-12 sm:col-span-3 text-right">
+                            <label class="block text-[10px] font-semibold text-slate-400 mb-0.5">Subtotal Baris</label>
+                            <span id="itemSubtotal_${item.id}" class="font-bold text-blue-900 text-xs sm:text-sm block py-1 font-mono-code">${formatRupiah(totalItem)}</span>
                         </div>
                     </div>
                 `;
-                listEl.appendChild(itemDiv);
+                listEl.appendChild(rowDiv);
             });
 
-            // Bind currency formatting to newly rendered item price inputs
+            // Re-bind live currency formatter on dynamic price inputs
             document.querySelectorAll('.item-price-input').forEach(input => {
                 input.addEventListener('input', function() {
                     const id = parseInt(this.getAttribute('data-item-id'), 10);
@@ -747,8 +1080,8 @@
                     e.preventDefault();
                     const id = parseInt(this.getAttribute('data-item-id'), 10);
                     let text = (e.clipboardData || window.clipboardData).getData('text');
-                    let num = parseNumber(text);
-                    this.value = num > 0 ? formatAngkaTitik(num) : '';
+                    let num = parseAngka(text);
+                    this.value = num > 0 ? formatRibuan(num) : '';
                     updateItemField(id, 'price', num);
                 });
             });
@@ -756,16 +1089,49 @@
 
         function addNewItem() {
             const nextId = items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-            items.push({ id: nextId, name: `Barang / Jasa #${nextId}`, qty: 1, price: 0 });
+            // Default satuan adalah "pcs" sesuai instruksi
+            items.push({ 
+                id: nextId, 
+                name: "", 
+                unitBasis: "pcs", 
+                pcsNote: "", 
+                qty: 0, 
+                price: 0 
+            });
             renderItems();
-            calculateTax();
+            hitungSemua();
         }
 
         function removeItem(id) {
             if (items.length <= 1) return;
             items = items.filter(i => i.id !== id);
             renderItems();
-            calculateTax();
+            hitungSemua();
+        }
+
+        function clearAllItems() {
+            items = [{ 
+                id: 1, 
+                name: "", 
+                unitBasis: "pcs", 
+                pcsNote: "", 
+                qty: 0, 
+                price: 0 
+            }];
+            renderItems();
+            hitungSemua();
+        }
+
+        function updateItemBasis(id, basis) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+            item.unitBasis = basis;
+            // Jika pindah ke pcs dan qty ada desimal, bisa dibulatkan atau dipertahankan
+            if (basis === 'pcs') {
+                item.qty = Math.floor(Number(item.qty) || 0);
+            }
+            renderItems();
+            hitungSemua();
         }
 
         function updateItemField(id, field, value) {
@@ -773,13 +1139,22 @@
             if (!item) return;
 
             if (field === 'qty') {
-                item.qty = Math.max(1, parseInt(value, 10) || 1);
+                let parsed = typeof value === 'string' ? parseFloat(value.replace(',', '.')) : parseFloat(value);
+                item.qty = isNaN(parsed) ? 0 : parsed;
             } else if (field === 'price') {
                 item.price = Number(value) || 0;
             } else {
                 item[field] = value;
             }
-            calculateTax();
+
+            // Hitung dan perbarui Subtotal Baris secara instan pada kartu item
+            const subtotalSpan = document.getElementById(`itemSubtotal_${id}`);
+            if (subtotalSpan) {
+                const rowTotal = (Number(item.qty) || 0) * (Number(item.price) || 0);
+                subtotalSpan.innerText = formatRupiah(rowTotal);
+            }
+
+            hitungSemua();
         }
 
         function setPaymentScheme(scheme) {
@@ -789,469 +1164,825 @@
             const dpContainer = document.getElementById('dpContainer');
 
             if (scheme === 'dp') {
-                btnDP.classList.replace('bg-white', 'bg-blue-600');
-                btnDP.classList.replace('text-slate-700', 'text-white');
-                btnDP.classList.replace('border-slate-300', 'border-blue-600');
-
-                btnFull.classList.replace('bg-blue-600', 'bg-white');
-                btnFull.classList.replace('text-white', 'text-slate-700');
-                btnFull.classList.replace('border-blue-600', 'border-slate-300');
+                btnDP.className = "py-2 px-3 text-xs font-semibold rounded-lg border bg-blue-600 text-white border-blue-600 transition shadow-sm";
+                btnFull.className = "py-2 px-3 text-xs font-semibold rounded-lg border bg-white text-slate-700 border-slate-300 hover:bg-slate-100 transition shadow-sm";
                 dpContainer.classList.remove('hidden');
             } else {
-                btnFull.classList.replace('bg-white', 'bg-blue-600');
-                btnFull.classList.replace('text-slate-700', 'text-white');
-                btnFull.classList.replace('border-slate-300', 'border-blue-600');
-
-                btnDP.classList.replace('bg-blue-600', 'bg-white');
-                btnDP.classList.replace('text-white', 'text-slate-700');
-                btnDP.classList.replace('border-blue-600', 'border-slate-300');
+                btnFull.className = "py-2 px-3 text-xs font-semibold rounded-lg border bg-blue-600 text-white border-blue-600 transition shadow-sm";
+                btnDP.className = "py-2 px-3 text-xs font-semibold rounded-lg border bg-white text-slate-700 border-slate-300 hover:bg-slate-100 transition shadow-sm";
                 dpContainer.classList.add('hidden');
             }
-            calculateTax();
+            hitungSemua();
         }
 
-        // Kalkulasi Utama Pajak & Penagihan
-        function calculateTax() {
-            const clientNameInput = document.getElementById('clientName');
-            const invoiceNumInput = document.getElementById('invoiceNum');
-            const clientName = clientNameInput ? clientNameInput.value.trim() || 'Pembeli / Pelanggan' : 'Pembeli / Pelanggan';
-            const invoiceNum = invoiceNumInput ? invoiceNumInput.value.trim() || '-' : '-';
+        function toggleSection(sectionId, chevronId) {
+            const sec = document.getElementById(sectionId);
+            const chev = document.getElementById(chevronId);
+            if (!sec) return;
+            sec.classList.toggle('hidden');
+            if (chev) {
+                chev.classList.toggle('rotate-180');
+            }
+        }
 
-            // Hitung Raw Subtotal
+        function hitungSemua() {
+            // Profil Identitas
+            const sellerName = document.getElementById('sellerName')?.value.trim() || 'CV Mandiri Logam Jaya';
+            const sellerTaxId = document.getElementById('sellerTaxId')?.value.trim() || '01.234.567.8-012.000';
+            const clientName = document.getElementById('clientName')?.value.trim() || '-';
+            const clientTaxId = document.getElementById('clientTaxId')?.value.trim() || '';
+            const invoiceNum = document.getElementById('invoiceNum')?.value.trim() || '-';
+            const invoiceDate = document.getElementById('invoiceDate')?.value || new Date().toISOString().split('T')[0];
+            const dueDate = document.getElementById('dueDate')?.value || '-';
+            const efakturCode = document.getElementById('efakturCode')?.value || '04';
+
+            // Bank details
+            const bankName = document.getElementById('bankName')?.value || 'Bank BCA';
+            const bankAccount = document.getElementById('bankAccount')?.value || '8830-192-881';
+            const bankHolder = document.getElementById('bankHolder')?.value || sellerName;
+
+            // Update Dokumen Identitas Cetak
+            document.getElementById('docSellerName').innerText = sellerName.toUpperCase();
+            document.getElementById('docSellerTaxId').innerText = sellerTaxId;
+            document.getElementById('docClientName').innerText = clientName;
+            document.getElementById('docClientTaxId').innerText = clientTaxId ? `NPWP/NIK: ${clientTaxId}` : '';
+            document.getElementById('docInvoiceNum').innerText = invoiceNum;
+            document.getElementById('docInvoiceDate').innerText = invoiceDate;
+            document.getElementById('docDueDate').innerText = dueDate !== '-' ? dueDate : 'Upon Receipt (Langsung)';
+            document.getElementById('docTaxCodeBadge').innerText = efakturCode;
+            document.getElementById('docBankName').innerText = bankName;
+            document.getElementById('docBankAccount').innerText = bankAccount;
+            document.getElementById('docBankHolder').innerText = bankHolder;
+            document.getElementById('docSignatureCompany').innerText = sellerName.toUpperCase();
+
+            // Sinkronkan teks Subtotal Baris pada semua baris formulir input
+            items.forEach(it => {
+                const subtotalSpan = document.getElementById(`itemSubtotal_${it.id}`);
+                if (subtotalSpan) {
+                    const rowTotal = (Number(it.qty) || 0) * (Number(it.price) || 0);
+                    subtotalSpan.innerText = formatRupiah(rowTotal);
+                }
+            });
+
+            // 1. Raw Subtotal
             let rawSubtotal = 0;
             if (inputMode === 'items') {
-                rawSubtotal = items.reduce((acc, curr) => acc + ((curr.qty || 0) * (curr.price || 0)), 0);
+                rawSubtotal = items.reduce((acc, curr) => acc + ((Number(curr.qty) || 0) * (Number(curr.price) || 0)), 0);
             } else {
-                const subtotalInput = document.getElementById('subtotal');
-                rawSubtotal = subtotalInput ? parseNumber(subtotalInput.value) : 0;
+                rawSubtotal = parseAngka(document.getElementById('subtotal')?.value);
             }
 
-            // Diskon
-            const enableDiscountEl = document.getElementById('enableDiscount');
-            const isDiscountEnabled = enableDiscountEl ? enableDiscountEl.checked : false;
-            const discountTypeEl = document.querySelector('input[name="discountType"]:checked');
-            const discountType = discountTypeEl ? discountTypeEl.value : 'nominal';
-            const discountValueInput = document.getElementById('discountValue');
-            let rawDiscount = isDiscountEnabled && discountValueInput ? parseNumber(discountValueInput.value) : 0;
-
+            // 2. Diskon
+            const enableDiscount = document.getElementById('enableDiscount')?.checked || false;
+            const discountType = document.querySelector('input[name="discountType"]:checked')?.value || 'nominal';
+            const discountValueRaw = enableDiscount ? parseAngka(document.getElementById('discountValue')?.value) : 0;
+            
             let discountAmount = 0;
-            if (isDiscountEnabled && discountType === 'percent') {
-                discountAmount = (rawSubtotal * rawDiscount) / 100;
-            } else if (isDiscountEnabled) {
-                discountAmount = rawDiscount;
+            if (enableDiscount) {
+                if (discountType === 'percent') {
+                    discountAmount = (rawSubtotal * discountValueRaw) / 100;
+                } else {
+                    discountAmount = discountValueRaw;
+                }
             }
             if (discountAmount > rawSubtotal) discountAmount = rawSubtotal;
 
-            // Skema Pembayaran (DP / Full)
-            let baseSubtotal = rawSubtotal;
-            let baseDiscount = discountAmount;
-            let schemeInfoText = "Pelunasan / Full (100%)";
+            let netBeforeTax = rawSubtotal - discountAmount;
 
-            if (paymentScheme === 'dp') {
-                const dpPercentEl = document.getElementById('dpPercent');
-                const dpNominalEl = document.getElementById('dpNominal');
-                const dpPercent = dpPercentEl ? parseFloat(dpPercentEl.value) || 0 : 0;
-                const dpNominal = dpNominalEl ? parseNumber(dpNominalEl.value) : 0;
-                
-                let dpFactor = 1;
-                let dpPercentVal = 100;
+            // 3. Tax Inclusivity Back-Calculation
+            const useNilaiLain = document.getElementById('useDPPNilaiLain')?.checked || false;
+            let effectiveRate = useNilaiLain ? (0.12 * (11 / 12)) : 0.12;
 
-                if (dpNominal > 0 && rawSubtotal > 0) {
-                    dpFactor = dpNominal / rawSubtotal;
-                    dpPercentVal = ((dpNominal / rawSubtotal) * 100).toFixed(1);
-                } else if (dpPercent > 0) {
-                    dpFactor = dpPercent / 100;
-                    dpPercentVal = dpPercent;
-                }
-
-                baseSubtotal = rawSubtotal * dpFactor;
-                baseDiscount = discountAmount * dpFactor;
-                schemeInfoText = `Uang Muka / DP (${dpPercentVal}%)`;
+            let dppBaseCalculated = netBeforeTax;
+            if (taxMode === 'included' && netBeforeTax > 0) {
+                dppBaseCalculated = netBeforeTax / (1 + effectiveRate);
             }
 
-            // Ongkir / Biaya Tambahan
-            const enableShippingEl = document.getElementById('enableShipping');
-            const isShippingEnabled = enableShippingEl ? enableShippingEl.checked : false;
-            const shippingLabelInput = document.getElementById('shippingFeeLabel');
-            const customShippingLabel = shippingLabelInput ? shippingLabelInput.value.trim() || 'Ongkos Kirim / Biaya Lain' : 'Ongkos Kirim / Biaya Lain';
-            const shippingFeeInput = document.getElementById('shippingFee');
-            const shippingFee = isShippingEnabled && shippingFeeInput ? parseNumber(shippingFeeInput.value) : 0;
-            const shippingTaxRuleEl = document.querySelector('input[name="shippingTaxRule"]:checked');
-            const shippingTaxRule = shippingTaxRuleEl ? shippingTaxRuleEl.value : 'ppn';
+            // 4. Skema Termin / DP
+            let dpRatio = 1.0;
+            let schemeText = "Pelunasan Penuh (100%)";
+            if (paymentScheme === 'dp') {
+                const dpPercent = parseFloat(document.getElementById('dpPercent')?.value) || 0;
+                const dpNominal = parseAngka(document.getElementById('dpNominal')?.value);
 
-            // 1. DPP Reguler = Sub Total - Diskon (+ Ongkir jika Kena PPN)
-            let netSubtotal = baseSubtotal - baseDiscount;
-            let dppReguler = netSubtotal;
-            if (isShippingEnabled && shippingTaxRule === 'ppn') {
+                if (dpNominal > 0 && dppBaseCalculated > 0) {
+                    dpRatio = dpNominal / dppBaseCalculated;
+                    schemeText = `Termin / DP (${((dpNominal / dppBaseCalculated) * 100).toFixed(1)}%)`;
+                } else if (dpPercent > 0) {
+                    dpRatio = dpPercent / 100;
+                    schemeText = `Termin / DP (${dpPercent}%)`;
+                }
+            }
+            document.getElementById('docPaymentScheme').innerText = schemeText;
+            document.getElementById('dpCalculatedNote').innerText = schemeText;
+
+            let currentSubtotal = dppBaseCalculated * dpRatio;
+            let currentDiscount = discountAmount * dpRatio;
+
+            // 5. Ekspedisi / Ongkos Kirim
+            const enableShipping = document.getElementById('enableShipping')?.checked || false;
+            const shippingLabel = document.getElementById('shippingFeeLabel')?.value.trim() || 'Ongkos Kirim & Ekspedisi Logam';
+            const shippingFee = enableShipping ? parseAngka(document.getElementById('shippingFee')?.value) : 0;
+            const shippingTaxRule = document.querySelector('input[name="shippingTaxRule"]:checked')?.value || 'ppn';
+
+            // DPP Reguler
+            let dppReguler = currentSubtotal;
+            if (enableShipping && shippingTaxRule === 'ppn') {
                 dppReguler += shippingFee;
             }
-            if (dppReguler < 0) dppReguler = 0;
 
-            // 2. DPP Nilai Lain = 11/12 x DPP Reguler (Default Enabled)
-            const useDPPNilaiLainEl = document.getElementById('useDPPNilaiLain');
-            const useDPPNilaiLain = useDPPNilaiLainEl ? useDPPNilaiLainEl.checked : true;
-            let dppNilaiLain = useDPPNilaiLain ? (11 / 12) * dppReguler : 0;
+            // DPP Nilai Lain (11/12)
+            let dppNilaiLain = useNilaiLain ? (11 / 12) * dppReguler : 0;
 
-            // 3. PPN Terutang (12%)
-            let ppnAmount = useDPPNilaiLain ? (0.12 * dppNilaiLain) : (0.12 * dppReguler);
-
-            // 4. Grand Total Invoice (sebelum PPh)
-            let grandTotalInvoice = dppReguler + ppnAmount;
-            if (isShippingEnabled && shippingTaxRule === 'non-ppn') {
-                grandTotalInvoice += shippingFee;
+            // PPN 12%
+            let ppnAmount = 0;
+            if (efakturCode === '07' || efakturCode === '08') {
+                ppnAmount = 0;
+            } else if (useNilaiLain) {
+                ppnAmount = 0.12 * dppNilaiLain;
+            } else {
+                ppnAmount = 0.12 * dppReguler;
             }
 
-            // 5. Potongan PPh
-            const pphTypeEl = document.getElementById('pphType');
-            const pphType = pphTypeEl ? pphTypeEl.value : 'none';
-            let pphPercent = 0;
-            let pphName = "PPh";
+            // Grand Total Tagihan
+            let grandTotal = dppReguler + ppnAmount;
+            if (enableShipping && shippingTaxRule === 'non-ppn') {
+                grandTotal += shippingFee;
+            }
+
+            // 6. PPh Potongan
+            const pphType = document.getElementById('pphType')?.value || 'none';
+            let pphRate = 0;
+            let pphLabelName = "Potongan PPh";
 
             if (pphType === 'pph22') {
-                pphPercent = 1.5;
-                pphName = "Potongan PPh 22 (1,5%)";
+                pphRate = 1.5;
+                pphLabelName = "Potongan PPh 22 (1,5%)";
             } else if (pphType === 'pph23_jasa') {
-                pphPercent = 2.0;
-                pphName = "Potongan PPh 23 (2,0%)";
-            } else if (pphType === 'pph4_2') {
-                pphPercent = 10.0;
-                pphName = "Potongan PPh 4(2) (10,0%)";
+                pphRate = 2.0;
+                pphLabelName = "Potongan PPh 23 - Jasa Teknik/Cetak (2,0%)";
+            } else if (pphType === 'pph23_sewa') {
+                pphRate = 2.0;
+                pphLabelName = "Potongan PPh 23 - Sewa Alat (2,0%)";
+            } else if (pphType === 'pph4_2_konstruksi') {
+                pphRate = 1.75;
+                pphLabelName = "Potongan PPh Final 4(2) Konstruksi (1,75%)";
             } else if (pphType === 'custom') {
-                const customPphEl = document.getElementById('customPphPercent');
-                pphPercent = customPphEl ? parseFloat(customPphEl.value) || 0 : 0;
-                pphName = `Potongan PPh Custom (${pphPercent}%)`;
+                pphRate = parseFloat(document.getElementById('customPphPercent')?.value) || 0;
+                pphLabelName = `Potongan PPh Custom (${pphRate}%)`;
             }
 
-            let pphBase = useDPPNilaiLain ? dppNilaiLain : dppReguler;
-            let pphDeduction = (pphBase * pphPercent) / 100;
-            let netPayment = grandTotalInvoice - pphDeduction;
+            let pphBase = useNilaiLain ? dppNilaiLain : dppReguler;
+            let pphDeduction = (pphBase * pphRate) / 100;
+            let netPayment = grandTotal - pphDeduction;
 
-            // Update UI Ringkasan
-            document.getElementById('outClientName').innerText = clientName;
-            document.getElementById('outInvoiceNum').innerText = invoiceNum;
-            document.getElementById('outTotalProjectVal').innerText = formatRupiah(rawSubtotal);
-            document.getElementById('outPaymentSchemeInfo').innerText = schemeInfoText;
-            document.getElementById('outSubtotal').innerText = formatRupiah(baseSubtotal);
+            // Render Tabel Barang di Dokumen Cetak
+            const itemsTableSection = document.getElementById('docItemsTableSection');
+            const itemsTableBody = document.getElementById('docItemsTableBody');
 
-            // Rincian Daftar Barang di Invoice
-            const itemsTableContainer = document.getElementById('invoiceItemsTableContainer');
-            const itemsTableBody = document.getElementById('invoiceItemsTableBody');
             if (inputMode === 'items' && items.length > 0) {
-                itemsTableContainer.classList.remove('hidden');
-                itemsTableBody.innerHTML = items.map((item, idx) => `
-                    <tr>
-                        <td class="py-1 px-2 text-slate-400 font-mono">${idx + 1}</td>
-                        <td class="py-1 px-2 font-medium text-slate-800">${item.name || 'Barang/Jasa'}</td>
-                        <td class="py-1 px-2 text-center text-slate-600 font-mono">${item.qty}</td>
-                        <td class="py-1 px-2 text-right text-slate-600 font-mono">${formatRupiah(item.price)}</td>
-                        <td class="py-1 px-2 text-right font-semibold text-slate-900 font-mono">${formatRupiah(item.qty * item.price)}</td>
-                    </tr>
-                `).join('');
+                itemsTableSection.classList.remove('hidden');
+                itemsTableBody.innerHTML = items.map((it, idx) => {
+                    const isKg = it.unitBasis === 'kg';
+                    const unitSuffix = isKg ? 'kg' : 'pcs';
+                    const priceUnitSuffix = isKg ? '/kg' : '/pcs';
+                    const qtyDisplay = isKg ? `${formatDesimalId(it.qty)} kg` : `${it.qty || 0} pcs`;
+                    const hasNote = Boolean(it.pcsNote && it.pcsNote.trim());
+                    const lineTotal = (Number(it.qty) || 0) * (Number(it.price) || 0);
+
+                    return `
+                        <tr>
+                            <td class="py-2 px-3 text-center text-slate-400 font-mono-code">${idx + 1}</td>
+                            <td class="py-2 px-3">
+                                <div class="font-semibold text-slate-900">${it.name || 'Barang / Jasa Penyerahan'}</div>
+                                ${hasNote ? `
+                                    <div class="text-[11px] text-blue-800 font-medium font-mono-code mt-0.5 flex items-center gap-1">
+                                        <i class="fa-solid fa-tag text-[9px] text-blue-600"></i>
+                                        <span>(${it.pcsNote.trim()})</span>
+                                    </div>
+                                ` : ''}
+                            </td>
+                            <td class="py-2 px-3 text-center font-bold text-slate-700 font-mono-code">
+                                <span class="px-2 py-0.5 rounded ${isKg ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-slate-50 text-slate-700'}">
+                                    ${qtyDisplay}
+                                </span>
+                            </td>
+                            <td class="py-2 px-3 text-right font-mono-code text-slate-700">
+                                ${formatRupiah(it.price)}<span class="text-[10px] text-slate-400">${priceUnitSuffix}</span>
+                            </td>
+                            <td class="py-2 px-3 text-right font-mono-code font-bold text-slate-900">
+                                ${formatRupiah(lineTotal)}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
             } else {
-                itemsTableContainer.classList.add('hidden');
+                itemsTableSection.classList.add('hidden');
             }
 
-            // Diskon UI
-            const rowDiscount = document.getElementById('rowDiscount');
-            if (isDiscountEnabled && baseDiscount > 0) {
-                rowDiscount.classList.remove('hidden');
-                document.getElementById('outDiscount').innerText = formatRupiah(baseDiscount);
-            } else {
-                rowDiscount.classList.add('hidden');
-            }
-
-            document.getElementById('outDPPReguler').innerText = formatRupiah(dppReguler);
-
-            // DPP Nilai Lain UI
-            const rowNilaiLain = document.getElementById('rowDPPNilaiLain');
-            if (useDPPNilaiLain) {
-                rowNilaiLain.classList.remove('hidden');
-                document.getElementById('outDPPNilaiLain').innerText = formatRupiah(dppNilaiLain);
-            } else {
-                rowNilaiLain.classList.add('hidden');
-            }
-
-            document.getElementById('outPPN').innerText = formatRupiah(ppnAmount);
-
-            // Ongkir / Biaya UI
-            const rowShipping = document.getElementById('rowShipping');
-            if (isShippingEnabled && shippingFee > 0) {
-                rowShipping.classList.remove('hidden');
-                document.getElementById('outShippingLabel').innerText = `* ${customShippingLabel}:`;
-                document.getElementById('outShipping').innerText = formatRupiah(shippingFee) + (shippingTaxRule === 'non-ppn' ? ' (Reimbursement)' : ' (Kena PPN)');
-            } else {
-                rowShipping.classList.add('hidden');
-            }
-
-            // Grand Total & Terbilang
-            const roundedGrandTotal = Math.round(grandTotalInvoice);
-            document.getElementById('outGrandTotal').innerText = formatRupiah(roundedGrandTotal);
+            // Tampilkan Nilai di Faktur Dokumen
+            document.getElementById('docSubtotal').innerText = formatRupiah(currentSubtotal);
             
-            const terbilangGrandTotal = angkaKeTerbilang(roundedGrandTotal);
-            document.getElementById('outTerbilang').innerText = `# ${terbilangGrandTotal} #`;
+            const docRowDiscount = document.getElementById('docRowDiscount');
+            if (enableDiscount && currentDiscount > 0) {
+                docRowDiscount.classList.remove('hidden');
+                document.getElementById('docDiscount').innerText = `- ${formatRupiah(currentDiscount)}`;
+            } else {
+                docRowDiscount.classList.add('hidden');
+            }
 
-            // PPh UI & Terbilang Net
-            const labelPPhType = document.getElementById('labelPPhType');
-            const outPPhDeduction = document.getElementById('outPPhDeduction');
-            const outNetPayment = document.getElementById('outNetPayment');
-            const containerTerbilangNet = document.getElementById('containerTerbilangNet');
-            const outTerbilangNet = document.getElementById('outTerbilangNet');
+            document.getElementById('docDPPReguler').innerText = formatRupiah(dppReguler);
+
+            const docRowDPPNilaiLain = document.getElementById('docRowDPPNilaiLain');
+            if (useNilaiLain) {
+                docRowDPPNilaiLain.classList.remove('hidden');
+                document.getElementById('docDPPNilaiLain').innerText = formatRupiah(dppNilaiLain);
+            } else {
+                docRowDPPNilaiLain.classList.add('hidden');
+            }
+
+            document.getElementById('docPPN').innerText = (efakturCode === '07' || efakturCode === '08') 
+                ? 'Rp 0 (Fasilitas Bebas/Tdk Dipungut)' 
+                : formatRupiah(ppnAmount);
+
+            const docRowShipping = document.getElementById('docRowShipping');
+            if (enableShipping && shippingFee > 0) {
+                docRowShipping.classList.remove('hidden');
+                document.getElementById('lblDocShipping').innerText = `${shippingLabel}:`;
+                document.getElementById('docShipping').innerText = formatRupiah(shippingFee) + (shippingTaxRule === 'non-ppn' ? ' (Reimbursement)' : ' (Kena PPN)');
+            } else {
+                docRowShipping.classList.add('hidden');
+            }
+
+            // Grand Total & Terbilang (Default jika 0: "# Nol Rupiah #")
+            const roundedGrandTotal = Math.round(grandTotal);
+            document.getElementById('docGrandTotal').innerText = formatRupiah(roundedGrandTotal);
+            document.getElementById('docTerbilang').innerText = `# ${angkaKeTerbilang(roundedGrandTotal)} #`;
+
+            // PPh & Net
+            const docRowPph = document.getElementById('docRowPph');
+            const docTerbilangNetContainer = document.getElementById('docTerbilangNetContainer');
 
             if (pphType !== 'none' && pphDeduction > 0) {
-                labelPPhType.innerText = `* ${pphName}:`;
-                outPPhDeduction.innerText = `(${formatRupiah(pphDeduction)})`;
-                const roundedNet = Math.round(netPayment);
-                outNetPayment.innerText = formatRupiah(roundedNet);
+                docRowPph.classList.remove('hidden');
+                document.getElementById('lblDocPph').innerText = `${pphLabelName}:`;
+                document.getElementById('docPphDeduction').innerText = `(${formatRupiah(pphDeduction)})`;
                 
-                if (containerTerbilangNet && outTerbilangNet) {
-                    containerTerbilangNet.classList.remove('hidden');
-                    outTerbilangNet.innerText = `# ${angkaKeTerbilang(roundedNet)} #`;
+                const roundedNet = Math.round(netPayment);
+                document.getElementById('docNetPayment').innerText = formatRupiah(roundedNet);
+                
+                if (docTerbilangNetContainer) {
+                    docTerbilangNetContainer.classList.remove('hidden');
+                    document.getElementById('docTerbilangNet').innerText = `# ${angkaKeTerbilang(roundedNet)} #`;
                 }
             } else {
-                labelPPhType.innerText = `* Potongan PPh:`;
-                outPPhDeduction.innerText = `(Rp 0)`;
-                outNetPayment.innerText = formatRupiah(roundedGrandTotal);
-                if (containerTerbilangNet) containerTerbilangNet.classList.add('hidden');
+                docRowPph.classList.add('hidden');
+                document.getElementById('docNetPayment').innerText = formatRupiah(roundedGrandTotal);
+                if (docTerbilangNetContainer) docTerbilangNetContainer.classList.add('hidden');
             }
         }
 
-        // Salin Rincian Teks Lengkap ke Clipboard
-        function copyToClipboard() {
-            const invoiceNum = document.getElementById('outInvoiceNum')?.innerText || '-';
-            const clientName = document.getElementById('outClientName')?.innerText || '-';
-            const totalProjectVal = document.getElementById('outTotalProjectVal')?.innerText || 'Rp 0';
-            const schemeInfo = document.getElementById('outPaymentSchemeInfo')?.innerText || '-';
-            const subtotal = document.getElementById('outSubtotal')?.innerText || 'Rp 0';
-            const isDiscountEnabled = document.getElementById('enableDiscount')?.checked || false;
-            const discount = document.getElementById('outDiscount')?.innerText || 'Rp 0';
-            const dppReguler = document.getElementById('outDPPReguler')?.innerText || 'Rp 0';
-            const useNilaiLain = document.getElementById('useDPPNilaiLain')?.checked || false;
-            const dppNilaiLain = document.getElementById('outDPPNilaiLain')?.innerText || 'Rp 0';
-            const ppn = document.getElementById('outPPN')?.innerText || 'Rp 0';
-            const isShippingEnabled = document.getElementById('enableShipping')?.checked || false;
-            const customShippingLabel = document.getElementById('shippingFeeLabel')?.value.trim() || 'Ongkos Kirim / Biaya Lain';
-            const shipping = document.getElementById('outShipping')?.innerText || 'Rp 0';
-            const grandTotal = document.getElementById('outGrandTotal')?.innerText || 'Rp 0';
-            const terbilangText = document.getElementById('outTerbilang')?.innerText || '';
-            const pphType = document.getElementById('pphType')?.value || 'none';
-            const pphDeduction = document.getElementById('outPPhDeduction')?.innerText || '(Rp 0)';
-            const netPayment = document.getElementById('outNetPayment')?.innerText || 'Rp 0';
-
-            let text = `---
-RINCIAN PENAGIHAN & PERPAJAKAN
-Invoice: ${invoiceNum} | Kepada: ${clientName}
-Total Nilai Transaksi Utama: ${totalProjectVal}
-Skema Penagihan: ${schemeInfo}
------------------------------------\n`;
-
-            if (inputMode === 'items' && items.length > 0) {
-                text += `DAFTAR BARANG / JASA:\n`;
-                items.forEach((item, idx) => {
-                    text += `${idx + 1}. ${item.name} (${item.qty} x ${formatRupiah(item.price)}) = ${formatRupiah(item.qty * item.price)}\n`;
-                });
-                text += `-----------------------------------\n`;
-            }
-
-            text += `* Sub Total Penagihan Ini: ${subtotal}\n`;
-
-            if (isDiscountEnabled && parseNumber(document.getElementById('discountValue')?.value) > 0) {
-                text += `* Diskon: ${discount}\n`;
-            }
-
-            text += `* DPP Reguler: ${dppReguler}\n`;
-            if (useNilaiLain) {
-                text += `* DPP Nilai Lain (11/12): ${dppNilaiLain}\n`;
-            }
-            text += `* PPN 12%: ${ppn}\n`;
-
-            if (isShippingEnabled && parseNumber(document.getElementById('shippingFee')?.value) > 0) {
-                text += `* ${customShippingLabel}: ${shipping}\n`;
-            }
-
-            text += `-----------------------------------
-* GRAND TOTAL TAGIHAN (INVOICE): ${grandTotal}
-* Terbilang: ${terbilangText}
-`;
-
-            if (pphType !== 'none') {
-                text += `
-ESTIMASI PEMBAYARAN (JIKA ADA POTONGAN PPh):
-* Potongan PPh: ${pphDeduction}
-* TOTAL DITERIMA / DIBAYARKAN (NET): ${netPayment}
-`;
-            }
-            text += `---`;
-
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = text;
-            dummy.select();
-            document.execCommand("copy");
-            document.body.removeChild(dummy);
-
-            showToast("Teks rincian faktur & terbilang berhasil disalin!");
-        }
-
-        // Salin Nominal atau Kalimat Tunggal
         function copySingleValue(elementId) {
             const el = document.getElementById(elementId);
             if (!el) return;
 
-            let textVal = el.innerText.trim();
-            // Bersihkan suffix seperti (Kena PPN) atau (Reimbursement)
-            textVal = textVal.replace(/\s*\((Kena PPN|Reimbursement)\)/gi, '');
-            // Jika terbilang, bersihkan tanda pagar pagar di depan/belakang
-            if (elementId === 'outTerbilang' || elementId === 'outTerbilangNet') {
-                textVal = textVal.replace(/^#\s*|\s*#$/g, '');
-            }
+            let text = el.innerText.trim();
+            text = text.replace(/\s*\((Kena PPN|Reimbursement|Fasilitas Bebas\/Tdk Dipungut)\)/gi, '');
+            text = text.replace(/^#\s*|\s*#$/g, '');
 
-            const dummy = document.createElement("textarea");
-            document.body.appendChild(dummy);
-            dummy.value = textVal;
-            dummy.select();
+            const temp = document.createElement("textarea");
+            document.body.appendChild(temp);
+            temp.value = text;
+            temp.select();
             document.execCommand("copy");
-            document.body.removeChild(dummy);
+            document.body.removeChild(temp);
 
-            showToast(`"${textVal}" berhasil disalin!`);
+            showToast(`"${text}" berhasil disalin!`);
         }
 
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            const toastMsg = document.getElementById('toastMsg');
-            if (toastMsg) toastMsg.innerText = msg;
-            if (toast) {
-                toast.classList.remove('opacity-0', 'pointer-events-none');
+        function copyToClipboardFormatted() {
+            const seller = document.getElementById('docSellerName')?.innerText || '';
+            const invNum = document.getElementById('docInvoiceNum')?.innerText || '-';
+            const client = document.getElementById('docClientName')?.innerText || '-';
+            const scheme = document.getElementById('docPaymentScheme')?.innerText || '';
+            const subtotal = document.getElementById('docSubtotal')?.innerText || 'Rp 0';
+            const dppReguler = document.getElementById('docDPPReguler')?.innerText || 'Rp 0';
+            const useNilaiLain = document.getElementById('useDPPNilaiLain')?.checked;
+            const dppNilaiLain = document.getElementById('docDPPNilaiLain')?.innerText || 'Rp 0';
+            const ppn = document.getElementById('docPPN')?.innerText || 'Rp 0';
+            const grandTotal = document.getElementById('docGrandTotal')?.innerText || 'Rp 0';
+            const terbilang = document.getElementById('docTerbilang')?.innerText || '# Nol Rupiah #';
+            const pphType = document.getElementById('pphType')?.value;
+            const pphDeduction = document.getElementById('docPphDeduction')?.innerText || '';
+            const netPayment = document.getElementById('docNetPayment')?.innerText || 'Rp 0';
+
+            let txt = `========================================\n`;
+            txt += `RINCIAN FAKTUR & PENAGIHAN PERPAJAKAN\n`;
+            txt += `Penerbit : ${seller}\n`;
+            txt += `Invoice  : ${invNum}\n`;
+            txt += `Klien    : ${client}\n`;
+            txt += `Skema    : ${scheme}\n`;
+            txt += `========================================\n`;
+
+            if (inputMode === 'items' && items.length > 0) {
+                txt += `DAFTAR BARANG / JASA:\n`;
+                items.forEach((it, i) => {
+                    const isKg = it.unitBasis === 'kg';
+                    const hasNote = Boolean(it.pcsNote && it.pcsNote.trim());
+                    const namePart = hasNote ? `${it.name || 'Barang'} (${it.pcsNote.trim()})` : (it.name || 'Barang');
+                    const qtyPart = isKg ? `${formatDesimalId(it.qty)} kg` : `${it.qty || 0} pcs`;
+                    const pricePart = `${formatRupiah(it.price)}${isKg ? '/kg' : ''}`;
+                    const lineTotal = formatRupiah((Number(it.qty) || 0) * (Number(it.price) || 0));
+
+                    txt += `${i + 1}. ${namePart} - ${qtyPart} @ ${pricePart} = ${lineTotal}\n`;
+                });
+                txt += `----------------------------------------\n`;
+            }
+
+            txt += `• Sub Total        : ${subtotal}\n`;
+            txt += `• DPP Reguler      : ${dppReguler}\n`;
+            if (useNilaiLain) {
+                txt += `• DPP Nilai Lain   : ${dppNilaiLain} (Faktor 11/12)\n`;
+            }
+            txt += `• PPN (12%)        : ${ppn}\n`;
+            txt += `----------------------------------------\n`;
+            txt += `TOTAL TAGIHAN (INV): ${grandTotal}\n`;
+            txt += `Terbilang: ${terbilang}\n`;
+
+            if (pphType !== 'none') {
+                txt += `----------------------------------------\n`;
+                txt += `POTONGAN PPh       : ${pphDeduction}\n`;
+                txt += `NET DITERIMA (KAS) : ${netPayment}\n`;
+            }
+            txt += `========================================\n`;
+
+            const temp = document.createElement("textarea");
+            document.body.appendChild(temp);
+            temp.value = txt;
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+
+            showToast("Teks lengkap faktur berhasil disalin!");
+        }
+
+        // Fungsi Pencetakan Faktur yang Andal (mengatasi batasan iframe sandbox & browser preview)
+        function cetakFaktur() {
+            showToast("Mempersiapkan dokumen cetak...");
+            
+            const invoiceArea = document.getElementById('printableInvoiceArea');
+            if (!invoiceArea) {
+                window.print();
+                return;
+            }
+
+            const invoiceContent = invoiceArea.innerHTML;
+            const invNum = document.getElementById('docInvoiceNum')?.innerText || 'Invoice';
+            const clientName = document.getElementById('docClientName')?.innerText || 'Pelanggan';
+
+            const printDocumentHtml = `<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faktur Penagihan - ${invNum} - ${clientName}</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #ffffff !important; color: #0f172a; margin: 0; padding: 20px; }
+        .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+        .no-print { display: none !important; }
+        @media print {
+            body { padding: 0 !important; }
+            .no-print-bar { display: none !important; }
+            @page { margin: 10mm; size: auto; }
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <div class="no-print-bar bg-slate-900 text-white p-3 mb-4 rounded-xl flex items-center justify-between shadow-md max-w-4xl mx-auto">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-print text-emerald-400"></i>
+            <span class="text-xs font-semibold">Tampilan Siap Cetak Faktur</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="window.print()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-xs font-bold rounded-lg text-white transition flex items-center gap-1.5 cursor-pointer">
+                <i class="fa-solid fa-print"></i> Cetak Sekarang (Ctrl + P)
+            </button>
+            <button onclick="window.close()" class="px-2.5 py-1.5 bg-slate-700 hover:bg-slate-600 text-xs rounded-lg text-slate-300 transition">
+                Tutup
+            </button>
+        </div>
+    </div>
+    <div class="max-w-4xl mx-auto border border-slate-200 rounded-2xl p-6 sm:p-8 bg-white shadow-sm print:border-none print:shadow-none print:p-0">
+        ${invoiceContent}
+    </div>
+    <script>
+        window.onload = function() {
+            setTimeout(function() {
+                window.focus();
+                window.print();
+            }, 500);
+        };
+    <\/script>
+</body>
+</html>`;
+
+            // Strategi 1: Buka tab baru (terbebas dari pembatasan sandbox iframe editor)
+            let printWin = null;
+            try {
+                printWin = window.open('', '_blank');
+            } catch (e) {
+                console.warn("window.open diblokir atau gagal:", e);
+            }
+
+            if (printWin) {
+                try {
+                    printWin.document.open();
+                    printWin.document.write(printDocumentHtml);
+                    printWin.document.close();
+                    return;
+                } catch (errWin) {
+                    console.warn("Gagal menulis ke tab baru:", errWin);
+                }
+            }
+
+            // Strategi 2: Fallback iframe tersembunyi
+            try {
+                let printFrame = document.getElementById('appPrintIframe');
+                if (printFrame) printFrame.remove();
+
+                printFrame = document.createElement('iframe');
+                printFrame.id = 'appPrintIframe';
+                printFrame.style.position = 'fixed';
+                printFrame.style.right = '0';
+                printFrame.style.bottom = '0';
+                printFrame.style.width = '0';
+                printFrame.style.height = '0';
+                printFrame.style.border = '0';
+                printFrame.style.visibility = 'hidden';
+                document.body.appendChild(printFrame);
+
+                const frameDoc = printFrame.contentWindow.document;
+                frameDoc.open();
+                frameDoc.write(printDocumentHtml);
+                frameDoc.close();
+
                 setTimeout(() => {
-                    toast.classList.add('opacity-0', 'pointer-events-none');
+                    try {
+                        printFrame.contentWindow.focus();
+                        printFrame.contentWindow.print();
+                    } catch (eFrame) {
+                        console.warn("Print via iframe gagal:", eFrame);
+                        window.print();
+                    }
+                }, 500);
+            } catch (errFallback) {
+                console.warn("Fallback iframe gagal, langsung window.print():", errFallback);
+                window.print();
+            }
+        }
+
+        function copyWhatsAppFormat() {
+            const invNum = document.getElementById('docInvoiceNum')?.innerText || '-';
+            const client = document.getElementById('docClientName')?.innerText || '-';
+            const grandTotal = document.getElementById('docGrandTotal')?.innerText || 'Rp 0';
+            const terbilang = document.getElementById('docTerbilang')?.innerText || '# Nol Rupiah #';
+            const dueDate = document.getElementById('docDueDate')?.innerText || '-';
+            const bankName = document.getElementById('docBankName')?.innerText || '';
+            const bankAccount = document.getElementById('docBankAccount')?.innerText || '';
+            const bankHolder = document.getElementById('docBankHolder')?.innerText || '';
+
+            let msg = `Halo *${client !== '-' ? client : 'Bapak/Ibu'}*,\nBerikut kami lampirkan rincian invoice tagihan resmi:\n\n`;
+            msg += `📄 *Nomor Nota/Invoice*: ${invNum}\n`;
+            msg += `📅 *Jatuh Tempo*: ${dueDate}\n`;
+
+            if (inputMode === 'items' && items.length > 0) {
+                msg += `\n📦 *Rincian Penyerahan*:\n`;
+                items.forEach((it, idx) => {
+                    const isKg = it.unitBasis === 'kg';
+                    const hasNote = Boolean(it.pcsNote && it.pcsNote.trim());
+                    const namePart = hasNote ? `${it.name || 'Barang'} (${it.pcsNote.trim()})` : (it.name || 'Barang');
+                    const qtyPart = isKg ? `${formatDesimalId(it.qty)} kg` : `${it.qty || 0} pcs`;
+                    const pricePart = `${formatRupiah(it.price)}${isKg ? '/kg' : ''}`;
+                    const lineTotal = formatRupiah((Number(it.qty) || 0) * (Number(it.price) || 0));
+
+                    msg += `• ${namePart} - ${qtyPart} @ ${pricePart} = *${lineTotal}*\n`;
+                });
+            }
+
+            msg += `\n💰 *Grand Total*: *${grandTotal}*\n`;
+            msg += `📝 *Terbilang*: _${terbilang}_\n\n`;
+            msg += `💳 *Pembayaran Transfer Bank*:\n`;
+            msg += `Bank: ${bankName}\n`;
+            msg += `No. Rekening: *${bankAccount}*\n`;
+            msg += `A/N: *${bankHolder}*\n\n`;
+            msg += `Mohon konfirmasi setelah melakukan pembayaran. Terima kasih atas kerja samanya. 🙏`;
+
+            const temp = document.createElement("textarea");
+            document.body.appendChild(temp);
+            temp.value = msg;
+            temp.select();
+            document.execCommand("copy");
+            document.body.removeChild(temp);
+
+            showToast("Format pesan WhatsApp berhasil disalin!");
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            if (toastMsg) toastMsg.innerText = message;
+            if (toast) {
+                toast.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
                 }, 3000);
             }
         }
 
-        // Load Preset Cepat
         function loadPreset(type) {
-            document.getElementById('useDPPNilaiLain').checked = true;
             document.getElementById('enableDiscount').checked = false;
             document.getElementById('discountFieldsContainer').classList.add('hidden');
-            document.getElementById('discountStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
             document.getElementById('discountStatusBadge').innerText = 'Nonaktif';
+            document.getElementById('discountStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
 
             document.getElementById('enableShipping').checked = false;
             document.getElementById('shippingFieldsContainer').classList.add('hidden');
-            document.getElementById('shippingStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
             document.getElementById('shippingStatusBadge').innerText = 'Nonaktif';
+            document.getElementById('shippingStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
 
             document.getElementById('pphType').value = 'none';
             document.getElementById('customPphContainer').classList.add('hidden');
+            setTaxMode('excluded');
             setPaymentScheme('full');
 
-            if (type === 'transaksi_189jt') {
+            if (type === 'nota_cor_logam') {
+                // Skenario khusus transaksi Pengecoran Logam / Timbangan Kg & Catatan Pcs
                 setInputMode('items');
+                document.getElementById('useDPPNilaiLain').checked = true;
+                document.getElementById('efakturCode').value = '04';
+                document.getElementById('clientName').value = 'PT Karya Logam Nusantara';
+                document.getElementById('invoiceNum').value = 'COR/2026/X/012';
+
                 items = [
-                    { id: 1, name: "Perangkat Server Enterprise", qty: 1, price: 189000000 }
+                    { 
+                        id: 1, 
+                        name: "Body Roofdrain Besi Cor", 
+                        unitBasis: "kg", 
+                        pcsNote: "2 pcs", 
+                        qty: 3.2, 
+                        price: 15500 
+                    },
+                    { 
+                        id: 2, 
+                        name: "Kaki Kursi Taman Antik Cor", 
+                        unitBasis: "kg", 
+                        pcsNote: "2 pcs", 
+                        qty: 21.8, 
+                        price: 16000 
+                    },
+                    { 
+                        id: 3, 
+                        name: "Ongkos Cetak Pola & Bubut", 
+                        unitBasis: "pcs", 
+                        pcsNote: "2 pcs", 
+                        qty: 2, 
+                        price: 25000 
+                    }
                 ];
                 renderItems();
-            } else if (type === 'jasa_pph23') {
+                showToast("Preset Nota Cor Logam (Kg & Pcs) berhasil dimuat!");
+            } else if (type === 'default_189jt') {
                 setInputMode('items');
+                document.getElementById('useDPPNilaiLain').checked = true;
+                document.getElementById('efakturCode').value = '04';
+                document.getElementById('clientName').value = 'PT Cipta Gemilang Abadi';
+                document.getElementById('invoiceNum').value = 'INV/2026/10/089';
                 items = [
-                    { id: 1, name: "Jasa Pembuatan Software ERP", qty: 1, price: 25000000 }
+                    { 
+                        id: 1, 
+                        name: "Perangkat Server Enterprise & Rackmount", 
+                        unitBasis: "pcs", 
+                        pcsNote: "1 unit", 
+                        qty: 1, 
+                        price: 189000000 
+                    }
                 ];
                 renderItems();
+                showToast("Preset Server Rp 189 Jt dimuat!");
+            } else if (type === 'jasa_software') {
+                setInputMode('items');
+                document.getElementById('useDPPNilaiLain').checked = true;
+                document.getElementById('efakturCode').value = '04';
                 document.getElementById('pphType').value = 'pph23_jasa';
-            } else if (type === 'dp_termin') {
-                setInputMode('items');
+                document.getElementById('clientName').value = 'PT Rekayasa Industri Prima';
                 items = [
-                    { id: 1, name: "Pengadaan Mesin Produksi", qty: 1, price: 100000000 }
+                    { 
+                        id: 1, 
+                        name: "Jasa Fabrikasi & Pembuatan Modul Khusus", 
+                        unitBasis: "pcs", 
+                        pcsNote: "1 paket", 
+                        qty: 1, 
+                        price: 65000000 
+                    }
                 ];
                 renderItems();
+                showToast("Preset Jasa Fabrikasi + PPh 23 dimuat!");
+            } else if (type === 'dp_termin_30') {
+                setInputMode('items');
+                document.getElementById('useDPPNilaiLain').checked = true;
                 setPaymentScheme('dp');
                 document.getElementById('dpPercent').value = '30';
+                document.getElementById('clientName').value = 'PT Mitra Baja Mandiri';
+                items = [
+                    { 
+                        id: 1, 
+                        name: "Pengadaan Mesin Percetakan & Induction Furnace", 
+                        unitBasis: "pcs", 
+                        pcsNote: "", 
+                        qty: 1, 
+                        price: 250000000 
+                    }
+                ];
+                renderItems();
+                showToast("Preset Uang Muka DP 30% dimuat!");
+            } else if (type === 'inclusive_scenario') {
+                setInputMode('items');
+                setTaxMode('included');
+                document.getElementById('useDPPNilaiLain').checked = true;
+                items = [
+                    { 
+                        id: 1, 
+                        name: "Perangkat Alat Ukur Digital Pro (Gross Toko)", 
+                        unitBasis: "pcs", 
+                        pcsNote: "", 
+                        qty: 2, 
+                        price: 22200000 
+                    }
+                ];
+                renderItems();
+                showToast("Preset Harga Termasuk PPN dimuat!");
             }
 
-            calculateTax();
+            hitungSemua();
         }
 
-        // Helper untuk event listener aman
-        function attachListener(id, event, callback) {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener(event, callback);
-        }
+        function resetAllFields() {
+            // Bersihkan form ke kondisi awal (0 dan kosong)
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientTaxId').value = '';
+            document.getElementById('invoiceNum').value = '';
 
-        // Inisialisasi Event
-        attachListener('enableDiscount', 'change', function() {
-            const container = document.getElementById('discountFieldsContainer');
-            const badge = document.getElementById('discountStatusBadge');
-            if (this.checked) {
-                container.classList.remove('hidden');
-                badge.innerText = 'Aktif';
-                badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded';
-            } else {
-                container.classList.add('hidden');
-                badge.innerText = 'Nonaktif';
-                badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
-            }
-            calculateTax();
-        });
+            document.getElementById('enableDiscount').checked = false;
+            document.getElementById('discountFieldsContainer').classList.add('hidden');
+            document.getElementById('discountValue').value = '0';
+            document.getElementById('discountStatusBadge').innerText = 'Nonaktif';
+            document.getElementById('discountStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
 
-        attachListener('enableShipping', 'change', function() {
-            const container = document.getElementById('shippingFieldsContainer');
-            const badge = document.getElementById('shippingStatusBadge');
-            if (this.checked) {
-                container.classList.remove('hidden');
-                badge.innerText = 'Aktif';
-                badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-medium px-2 py-0.5 rounded';
-            } else {
-                container.classList.add('hidden');
-                badge.innerText = 'Nonaktif';
-                badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
-            }
-            calculateTax();
-        });
+            document.getElementById('enableShipping').checked = false;
+            document.getElementById('shippingFieldsContainer').classList.add('hidden');
+            document.getElementById('shippingFee').value = '0';
+            document.getElementById('shippingStatusBadge').innerText = 'Nonaktif';
+            document.getElementById('shippingStatusBadge').className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
 
-        attachListener('shippingFeeLabel', 'input', calculateTax);
-        attachListener('clientName', 'input', calculateTax);
-        attachListener('invoiceNum', 'input', calculateTax);
-        attachListener('useDPPNilaiLain', 'change', calculateTax);
+            document.getElementById('subtotal').value = '0';
+            document.getElementById('dpNominal').value = '0';
+            document.getElementById('dpPercent').value = '30';
+            document.getElementById('pphType').value = 'none';
+            document.getElementById('customPphContainer').classList.add('hidden');
 
-        attachListener('pphType', 'change', function() {
-            const container = document.getElementById('customPphContainer');
-            if (container) {
-                if (this.value === 'custom') {
-                    container.classList.remove('hidden');
-                } else {
-                    container.classList.add('hidden');
+            setTaxMode('excluded');
+            setPaymentScheme('full');
+            setInputMode('items');
+
+            // Default satuan/basis hitungan adalah "pcs" dan nilai 0/kosong
+            items = [
+                { 
+                    id: 1, 
+                    name: "", 
+                    unitBasis: "pcs", 
+                    pcsNote: "", 
+                    qty: 0, 
+                    price: 0 
                 }
-            }
-            calculateTax();
-        });
+            ];
 
-        attachListener('customPphPercent', 'input', calculateTax);
-        attachListener('dpPercent', 'input', calculateTax);
-
-        document.querySelectorAll('input[name="discountType"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const prefix = document.getElementById('discountPrefix');
-                const discountInput = document.getElementById('discountValue');
-                if (prefix) prefix.innerText = this.value === 'percent' ? '%' : 'Rp';
-                if (this.value === 'nominal' && discountInput) {
-                    let num = parseNumber(discountInput.value);
-                    discountInput.value = num > 0 ? formatAngkaTitik(num) : '0';
-                }
-                calculateTax();
-            });
-        });
-
-        document.querySelectorAll('input[name="shippingTaxRule"]').forEach(radio => {
-            radio.addEventListener('change', calculateTax);
-        });
-
-        // Window Load
-        window.onload = function() {
             renderItems();
-            applyCurrencyFormatting(document.getElementById('subtotal'));
-            applyCurrencyFormatting(document.getElementById('discountValue'));
-            applyCurrencyFormatting(document.getElementById('dpNominal'));
-            applyCurrencyFormatting(document.getElementById('shippingFee'));
-            calculateTax();
+            hitungSemua();
+            showToast("Semua data di-reset ke nilai 0 (bersih).");
+        }
+
+        window.onload = function() {
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            const dueObj = new Date();
+            dueObj.setDate(dueObj.getDate() + 30);
+            const dueStr = dueObj.toISOString().split('T')[0];
+
+            const invDateEl = document.getElementById('invoiceDate');
+            const dueDateEl = document.getElementById('dueDate');
+            if (invDateEl) invDateEl.value = dateStr;
+            if (dueDateEl) dueDateEl.value = dueStr;
+
+            const curDateBadge = document.getElementById('headerCurrentDate');
+            if (curDateBadge) {
+                curDateBadge.innerText = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+            }
+
+            // Bind currency inputs
+            bindCurrencyInput(document.getElementById('subtotal'));
+            bindCurrencyInput(document.getElementById('discountValue'));
+            bindCurrencyInput(document.getElementById('dpNominal'));
+            bindCurrencyInput(document.getElementById('shippingFee'));
+
+            // General inputs
+            const triggerInputs = ['sellerName', 'sellerTaxId', 'clientName', 'clientTaxId', 'invoiceNum', 'invoiceDate', 'dueDate', 'bankName', 'bankAccount', 'bankHolder', 'shippingFeeLabel', 'customPphPercent'];
+            triggerInputs.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', hitungSemua);
+            });
+
+            // DP Percent change
+            document.getElementById('dpPercent')?.addEventListener('input', hitungSemua);
+
+            // Discount checkbox
+            document.getElementById('enableDiscount')?.addEventListener('change', function() {
+                const cont = document.getElementById('discountFieldsContainer');
+                const badge = document.getElementById('discountStatusBadge');
+                if (this.checked) {
+                    cont?.classList.remove('hidden');
+                    if (badge) {
+                        badge.innerText = 'Aktif';
+                        badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded';
+                    }
+                } else {
+                    cont?.classList.add('hidden');
+                    if (badge) {
+                        badge.innerText = 'Nonaktif';
+                        badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
+                    }
+                }
+                hitungSemua();
+            });
+
+            // Shipping checkbox
+            document.getElementById('enableShipping')?.addEventListener('change', function() {
+                const cont = document.getElementById('shippingFieldsContainer');
+                const badge = document.getElementById('shippingStatusBadge');
+                if (this.checked) {
+                    cont?.classList.remove('hidden');
+                    if (badge) {
+                        badge.innerText = 'Aktif';
+                        badge.className = 'text-[10px] bg-emerald-100 text-emerald-700 font-semibold px-2 py-0.5 rounded';
+                    }
+                } else {
+                    cont?.classList.add('hidden');
+                    if (badge) {
+                        badge.innerText = 'Nonaktif';
+                        badge.className = 'text-[10px] bg-slate-200 text-slate-600 font-medium px-2 py-0.5 rounded';
+                    }
+                }
+                hitungSemua();
+            });
+
+            // Discount radio
+            document.querySelectorAll('input[name="discountType"]').forEach(r => {
+                r.addEventListener('change', function() {
+                    const pfx = document.getElementById('discountPrefix');
+                    const valEl = document.getElementById('discountValue');
+                    if (pfx) pfx.innerText = this.value === 'percent' ? '%' : 'Rp';
+                    if (this.value === 'nominal' && valEl) {
+                        let num = parseAngka(valEl.value);
+                        valEl.value = num > 0 ? formatRibuan(num) : '0';
+                    }
+                    hitungSemua();
+                });
+            });
+
+            // Shipping tax rule radio
+            document.querySelectorAll('input[name="shippingTaxRule"]').forEach(r => {
+                r.addEventListener('change', hitungSemua);
+            });
+
+            // Tax checkboxes & selects
+            document.getElementById('useDPPNilaiLain')?.addEventListener('change', hitungSemua);
+            document.getElementById('efakturCode')?.addEventListener('change', hitungSemua);
+            
+            document.getElementById('pphType')?.addEventListener('change', function() {
+                const customCont = document.getElementById('customPphContainer');
+                if (this.value === 'custom') {
+                    customCont?.classList.remove('hidden');
+                } else {
+                    customCont?.classList.add('hidden');
+                }
+                hitungSemua();
+            });
+
+            // Inisialisasi awal bersih (0)
+            renderItems();
+            hitungSemua();
         };
     </script>
 </body>
