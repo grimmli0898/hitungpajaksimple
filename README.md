@@ -1,2 +1,2 @@
-# hitungpajaksimple
-perhitungan pajak simpel
+# hitunginvoice
+perhitungan invoice simpel
